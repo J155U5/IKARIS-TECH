@@ -6,7 +6,9 @@ import { supabase } from "../supabaseClient";
 import { apiFetch } from "../api";
 import AuthLayout from "./AuthLayout";
 import "./auth.css";
+import ikarisLogo from "../assets/IKARIS_ST.png";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+
 
 export default function Login() {
   const navigate = useNavigate();
@@ -21,28 +23,49 @@ export default function Login() {
   const [kind, setKind] = useState("error"); // error | ok
   const [loading, setLoading] = useState(false);
 
-  // ✅ 1) Si ya hay sesión, no mostrar login: manda al destino o dashboard
-  useEffect(() => {
-    let alive = true;
+useEffect(() => {
+  let alive = true;
 
-    async function boot() {
+  async function boot() {
+    try {
+      const { data } = await supabase.auth.getSession();
+      if (!alive) return;
+
+      const token = data?.session?.access_token;
+
+      // ✅ Si no hay sesión, no hacemos nada
+      if (!token) return;
+
+      // ✅ NO redirigir solo por token: primero valida backend /auth/me
       try {
-        const { data } = await supabase.auth.getSession();
+        const me = await apiFetch("/auth/me", { tokenOverride: token });
         if (!alive) return;
 
-        const token = data?.session?.access_token;
-        if (token) {
-          const from = location?.state?.from || "/dashboard";
-          window.location.replace(from);
-        }
-      } catch (_) {}
-    }
+        // ✅ Si backend confirma, ahora sí entra
+        const from = location?.state?.from || "/dashboard";
+        window.location.replace(from);
+      } catch (e) {
+        // 🔥 Token inválido / sesión corrupta / backend no lo acepta -> cortar loop
+        try {
+          await supabase.auth.signOut();
+        } catch (_) {}
 
-    boot();
-    return () => {
-      alive = false;
-    };
-  }, [location?.state?.from]);
+        // opcional: limpia mensaje si quieres
+        // setKind("error");
+        // setMsg("Tu sesión expiró. Inicia sesión de nuevo.");
+
+        // Quédate en /login
+        return;
+      }
+    } catch (_) {}
+  }
+
+  boot();
+  return () => {
+    alive = false;
+  };
+}, [location?.state?.from]);
+
 
   // ✅ helper: si NO quiere mantener sesión, cerramos al cerrar pestaña / recargar
   function armNoRememberLogout() {
@@ -203,13 +226,15 @@ export default function Login() {
     }
   }
 
-  return (
-    <AuthLayout
-      title="Inicia sesión"
-      subtitle="Accede a tu empresa y continua tu operación."
-      sideTitle="IKARIS: ERP ligero, modular"
-      sideText="Diseñado para empresas que necesitan control real: formularios, aprobaciones y trazabilidad."
-    >
+return (
+  <AuthLayout
+    brandLogo={ikarisLogo}
+    title="Inicia sesión"
+    subtitle="Accede a tu empresa y continua tu operación."
+    sideTitle="IKARIS: ERP ligero, modular"
+    sideText="Diseñado para empresas que necesitan control real: formularios, aprobaciones y trazabilidad."
+  >
+
       {msg ? <div className={`alert ${kind}`}>{msg}</div> : null}
 
       <div className="auth-form">

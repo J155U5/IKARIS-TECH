@@ -1,8 +1,21 @@
 // web/src/api.js
 import { supabase } from "./supabaseClient";
 
-// Respeta tu .env: REACT_APP_API_URL=http://localhost:4000/api
-const API_URL = process.env.REACT_APP_API_URL || "/api";
+// ✅ Base URL inteligente:
+// - En local puedes usar REACT_APP_API_URL=http://localhost:4000/api
+// - En producción SIEMPRE usa same-origin "/api" (evita localhost)
+const RAW_API_URL = process.env.REACT_APP_API_URL || "/api";
+
+const isBrowser = typeof window !== "undefined";
+const host = isBrowser ? window.location.hostname : "";
+const isLocalHost = host === "localhost" || host === "127.0.0.1";
+
+// Si NO estás en localhost (producción), ignoramos cualquier env que apunte a localhost.
+const API_URL =
+  !isLocalHost && /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\/api$/i.test(RAW_API_URL)
+    ? "/api"
+    : RAW_API_URL;
+
 
 export async function apiFetch(path, opts = {}) {
   // ✅ NUEVO: si skipAuth = true, NO intentamos poner Authorization

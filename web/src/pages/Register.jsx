@@ -306,7 +306,7 @@ try {
   return (
 <AuthLayout
   title="Crear cuenta"
-  subtitle="Registra tu empresa y controla todo como ARCHON."
+  subtitle="Bienvenido a Ikaris Tech, registra tu empresa y controla tu operación."
   sideTitle="IKARIS"
   sideText="Un sistema serio: formularios, evidencias, flujos y auditoría."
   hideRight
