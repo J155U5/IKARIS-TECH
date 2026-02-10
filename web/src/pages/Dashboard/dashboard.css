@@ -1,0 +1,2342 @@
+/* IKARIS Dashboard – coherente con auth, pero menos saturado */
+
+:root{
+
+--bg0: #eef3ff;
+--bg1: #edf0ff;
+
+--paper: rgba(255,255,255,.78);
+--paper2: rgba(255,255,255,.92);
+
+--shadow: 0 18px 55px rgba(15, 23, 42, .08);
+--shadow2: 0 10px 28px rgba(15, 23, 42, .06);
+
+  --stroke: rgba(15, 23, 42, .10);
+  --stroke2: rgba(15, 23, 42, .16);
+
+  /* Tipografía (modo claro) */
+  --text: rgba(15, 23, 42, .92);
+  --muted: rgba(15, 23, 42, .62);
+  --muted2: rgba(15, 23, 42, .46);
+
+  /* Texto encima de superficies oscuras (topbar/sidebar/menu) */
+  --onDark: rgba(255,255,255,.92);
+  --onDarkMuted: rgba(255,255,255,.70);
+
+  /* Acentos (usar poco) */
+  --accent: rgba(86, 97, 246, .90);
+  --accent2: rgba(121, 86, 255, .85);
+
+
+
+  /* Iris (tornasol) */
+  --irisA: rgba(121, 86, 255, .70);
+  --irisB: rgba(86, 97, 246, .55);
+
+  --radius: 18px;
+}
+
+
+
+.ik-dashboard{
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 520px at 14% 10%, rgba(86, 97, 246, .10), transparent 60%),
+    radial-gradient(800px 520px at 86% 18%, rgba(121, 86, 255, .08), transparent 60%),
+    linear-gradient(180deg, var(--bg0), var(--bg1));
+  color: var(--text);
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+}
+
+
+/* Shell */
+.ik-shell{
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 16px;
+  padding: 16px 16px 22px;
+
+  /* ✅ transición tipo ChatGPT */
+  transition: grid-template-columns 260ms cubic-bezier(.2,.9,.2,1);
+  will-change: grid-template-columns;
+}
+
+/* ✅ cuando colapsa */
+.ik-shell.is-collapsed{
+  grid-template-columns: 86px 1fr;
+}
+
+
+.ik-main{
+  height: calc(100vh - 92px);
+  overflow: auto;
+  overscroll-behavior: contain;
+  min-height: 0;
+
+  /* ✅ ocultar scrollbar (pero mantener scroll) */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ik-main::-webkit-scrollbar{
+  width: 0;
+  height: 0;
+}
+
+
+/* Topbar */
+.ik-topbar{
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: grid;
+  grid-template-columns: 1.1fr 1.2fr 0.9fr;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 16px;
+
+  /* Tornasol SOLO aquí */
+  background:
+    radial-gradient(1000px 160px at 12% 0%, rgba(121,86,255,.28), transparent 62%),
+    radial-gradient(900px 160px at 72% 0%, rgba(86,97,246,.22), transparent 62%),
+    linear-gradient(180deg, rgba(8,10,18,.92), rgba(10,12,20,.74));
+  backdrop-filter: blur(18px);
+
+  border-bottom: 1px solid rgba(255,255,255,.10);
+  box-shadow: 0 18px 70px rgba(0,0,0,.35);
+  color: rgba(255,255,255,.92);
+}
+
+
+.ik-topbar__left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+/* ✅ Icon buttons (Topbar + Sidebar) */
+.ik-iconbtn{
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: var(--onDark);
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.ik-iconbtn:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
+  transform: translateY(-1px);
+}
+.ik-iconbtn:focus{
+  outline: none;
+}
+.ik-iconbtn:focus-visible{
+  box-shadow: 0 0 0 4px rgba(121,86,255,.18);
+}
+.ik-iconbtn{ position: relative; }
+/* ✅ Asegura visibilidad de icons (react-icons usa svg) */
+.ik-iconbtn svg,
+.ik-quick__btn svg,
+.ik-sideitem__icon svg{
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+}
+
+/* ✅ Quick buttons (Topbar) – versión final consistente */
+.ik-quick__btn{
+  appearance: none;
+  -webkit-appearance: none;
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: var(--onDark);
+  cursor: pointer;
+
+  display: grid;
+  place-items: center;
+  padding: 0;
+  line-height: 1;
+
+  -webkit-tap-highlight-color: transparent;
+  transition: background .14s ease, border-color .14s ease, transform .14s ease, box-shadow .14s ease;
+}
+.ik-quick__btn:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
+  transform: translateY(-1px);
+}
+.ik-quick__btn:active{
+  transform: translateY(0);
+}
+.ik-quick__btn:focus{ outline: none; }
+.ik-quick__btn:focus-visible{
+  box-shadow: 0 0 0 4px rgba(121,86,255,.18);
+}
+
+
+
+.ik-dot{
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.85);
+  transform: translate(10px, -10px);
+  box-shadow: 0 0 0 4px rgba(120,86,255,.25);
+}
+
+.ik-brand{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ik-brand__logo{
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+  letter-spacing: .5px;
+  background: linear-gradient(135deg, rgba(120,86,255,.85), rgba(0,160,255,.65));
+  color: rgba(255,255,255,.95);
+  box-shadow: 0 18px 60px rgba(120,86,255,.18);
+}
+
+.ik-brand__name{
+  font-weight: 900;
+  letter-spacing: .8px;
+  line-height: 1.05;
+}
+
+.ik-brand__sub{
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.ik-quick{
+  display: flex;
+  gap: 10px;
+  margin-left: 60px; /* ✅ más separado del logo */
+}
+
+
+.ik-quick__btn:focus{ outline: none; }
+.ik-quick__btn:focus-visible{
+  box-shadow: 0 0 0 4px rgba(121,86,255,.18);
+}
+
+
+.ik-topbar__mid{
+  display: flex;
+  justify-content: center;
+}
+
+.ik-search{
+  width: min(620px, 100%);
+  position: relative;
+}
+.ik-search__icon{
+  position: absolute;
+  left: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: .8;
+}
+.ik-search__input{
+  width: 100%;
+  height: 42px;
+  padding: 0 38px 0 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  color: var(--text);
+  outline: none;
+}
+.ik-search__input::placeholder{ color: rgba(255,255,255,.42); }
+.ik-search__input:focus{
+  border-color: rgba(120,86,255,.35);
+  box-shadow: 0 0 0 4px rgba(120,86,255,.12);
+}
+.ik-search__clear{
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.05);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.ik-topbar__right{
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 10px;
+}
+
+.ik-profile{ position: relative; }
+.ik-profile__btn{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: var(--onDark);
+  cursor: pointer;
+}
+
+
+.ik-avatar{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  font-weight: 900;
+  letter-spacing: .8px;
+}
+
+.ik-profile__meta{
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  line-height: 1.05;
+}
+.ik-profile__meta.hide{ display: none; }
+
+.ik-profile__email{ font-size: 12px; opacity: .9; }
+.ik-profile__role{ font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+/* =========================
+   Profile menu (Topbar)
+   ========================= */
+
+/* contenedor del menú: lo dejamos siempre en el DOM para animar */
+.ik-menu{
+  position: absolute;
+  right: 0;
+  top: 52px;
+  z-index: 50;
+
+  /* el layout real lo controla .ik-menu--profile */
+  width: 220px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(10, 12, 20, .90);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 24px 80px rgba(0,0,0,.35);
+
+  /* ✅ animación tipo sidebar */
+  opacity: 0;
+  transform: translateY(-8px) scale(.98);
+  pointer-events: none;
+  transition:
+    opacity 260ms cubic-bezier(.2,.9,.2,1),
+    transform 260ms cubic-bezier(.2,.9,.2,1);
+  will-change: opacity, transform;
+
+  /* ya NO uses overflow hidden aquí, lo manejamos dentro */
+  overflow: visible;
+}
+
+/* variante grande del perfil */
+.ik-menu--profile{
+  width: 380px;
+}
+
+/* estado abierto */
+.ik-menu--profile.open{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+/* tarjeta interna con scroll si hace falta */
+.ik-menu__card{
+  border-radius: 18px;
+  overflow: hidden;
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+/* header “FB-like” */
+.ik-menu__hero{
+  display: grid;
+  grid-template-columns: 84px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.ik-menu__avatarBig{
+  width: 76px;
+  height: 76px;
+  border-radius: 22px;
+  position: relative;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.10);
+  overflow: hidden;
+}
+
+.ik-avatarBig__img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ik-avatar__img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  border-radius: 12px;
+}
+
+.ik-avatarBig__cam{
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.35);
+  color: rgba(255,255,255,.92);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  backdrop-filter: blur(10px);
+}
+.ik-avatarBig__cam:hover{
+  background: rgba(255,255,255,.10);
+}
+.ik-avatar{
+  overflow: hidden;
+}
+.ik-avatar__img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ik-menu__who{
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ik-menu__name{
+  font-weight: 900;
+  letter-spacing: .2px;
+  font-size: 16px;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ik-menu__sub{
+  font-size: 12px;
+  color: rgba(255,255,255,.62);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* rows */
+.ik-menu__rows{
+  padding: 12px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: min(520px, calc(100vh - 170px));
+  overflow: auto;
+
+  /* ocultar scrollbar pero permitir scroll */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ik-menu__rows::-webkit-scrollbar{
+  width: 0;
+  height: 0;
+}
+
+/* fila estilo “settings card” */
+.ik-row{
+  display: grid;
+  grid-template-columns: 28px 84px 1fr;
+  align-items: center;
+  gap: 10px;
+
+  padding: 10px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+}
+
+.ik-row__ic{
+  width: 28px;
+  height: 28px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+  color: rgba(255,255,255,.92);
+}
+
+.ik-row__k{
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .25px;
+  color: rgba(255,255,255,.70);
+}
+
+.ik-row__v{
+  font-size: 13px;
+  font-weight: 800;
+  color: rgba(255,255,255,.92);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: right;
+}
+
+.ik-row--edit{
+  grid-template-columns: 28px 84px 1fr;
+}
+.ik-row__input{
+  width: 100%;
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.18);
+  color: rgba(255,255,255,.92);
+  outline: none;
+  padding: 0 10px;
+}
+/* =========================
+   ✅ FIX inputs en LIGHT (Forms/Builder)
+   ========================= */
+.ik-dashboard.theme-light .ik-row__input{
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,.92);
+  color: var(--text);
+  /* ⛔️ NO forzar text-align aquí, porque rompe títulos centrados */
+}
+
+.ik-dashboard.theme-light .ik-row__input::placeholder{
+  color: rgba(15, 23, 42, .45);
+  font-weight: 800;
+}
+
+
+.ik-row__input:focus{
+  border-color: rgba(120,86,255,.35);
+  box-shadow: 0 0 0 4px rgba(120,86,255,.12);
+}
+
+/* footer actions */
+.ik-menu__actions{
+  padding: 10px 12px 12px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.ik-menu__item{
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 42px;
+  padding: 0 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+
+  /* ✅ siempre blanco en menú oscuro */
+  color: var(--onDark);
+
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.ik-menu__item:hover{
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.14);
+}
+.ik-menu__item svg{
+  stroke: currentColor;
+}
+
+
+/* Topbar profile meta (nombre empresa + rol) */
+.ik-profile__name{
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .25px;
+  line-height: 1.05;
+}
+
+
+
+/* Sidebar */
+.ik-sidebar{
+  height: calc(100vh - 92px);
+  position: sticky;
+  top: 76px;
+  border-radius: var(--radius);
+
+  /* Tornasol SOLO aquí */
+  border: 1px solid rgba(255,255,255,.14);
+  background:
+    radial-gradient(900px 520px at 20% 8%, rgba(121,86,255,.28), transparent 58%),
+    radial-gradient(900px 520px at 80% 18%, rgba(86,97,246,.22), transparent 58%),
+    linear-gradient(180deg, rgba(8,10,18,.92), rgba(10,12,20,.70));
+  backdrop-filter: blur(14px);
+
+  box-shadow:
+    0 26px 120px rgba(0,0,0,.28),
+    inset 0 1px 0 rgba(255,255,255,.10);
+
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+
+  transition: width 260ms cubic-bezier(.2,.9,.2,1), transform 260ms cubic-bezier(.2,.9,.2,1);
+  will-change: width, transform;
+  color: rgba(255,255,255,.92);
+}
+
+
+
+
+
+.ik-sidebar.collapsed{
+  width: 86px;
+}
+
+
+.ik-sidebar__top{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.ik-sidebar__title{
+  font-weight: 800;
+  color: rgba(255,255,255,.82);
+}
+
+.ik-sidebar__items{
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+
+  flex: 1 1 auto;
+  min-height: 0;
+
+  /* ✅ scroll por rueda (vertical) */
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+
+  /* ✅ ocultar scrollbar (pero mantener scroll) */
+  scrollbar-width: none;         /* Firefox */
+  -ms-overflow-style: none;      /* IE/Edge viejo */
+}
+.ik-sidebar__items::-webkit-scrollbar{
+  width: 0;
+  height: 0;
+}
+
+
+
+.ik-sideitem{
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+  color: var(--text);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 12px;
+  transition: background .12s ease, border-color .12s ease;
+}
+.ik-sideitem:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.12);
+}
+.ik-sideitem.active{
+  background: linear-gradient(135deg, rgba(120,86,255,.14), rgba(0,160,255,.10));
+  border-color: rgba(120,86,255,.18);
+}
+.ik-sideitem__icon{
+  font-size: 18px;
+  width: 22px;
+  display: grid;
+  place-items: center;
+}
+.ik-sideitem__label{
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+.ik-sep{
+  height: 1px;
+  background: rgba(255,255,255,.08);
+  margin: 8px 6px;
+}
+
+.ik-sidebar__bottom{
+  margin-top: auto;
+  padding: 12px;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.ik-sidebar__foot{
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+}
+.ik-sidebar__foot--mini{
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+.ik-foot__k{
+  font-weight: 900;
+  letter-spacing: .8px;
+}
+.ik-foot__v{
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+/* Page head */
+.ik-pagehead{
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding: 10px 6px 14px;
+}
+.ik-h1{
+  font-size: 26px;
+  font-weight: 900;
+  letter-spacing: .3px;
+}
+.ik-sub{
+  color: var(--muted);
+  margin-top: 6px;
+}
+.ik-chip{
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.ik-grid{
+  display: grid;
+  grid-template-columns: 1.15fr 1.35fr 0.95fr;
+  grid-template-rows: auto auto auto;
+  gap: 14px;
+}
+
+/* Fila 1 */
+.ik-card--myforms{ grid-column: 1; grid-row: 1; min-height: 180px; }
+.ik-card--movements{ grid-column: 2; grid-row: 1; min-height: 180px; }
+.ik-card--inbox{ grid-column: 3; grid-row: 1; min-height: 180px; }
+
+/* Fila 2 (lo visual) */
+.ik-card--performance{ grid-column: 1 / span 2; grid-row: 2; min-height: 260px; }
+.ik-card--calendar{ grid-column: 3; grid-row: 2; min-height: 260px; }
+
+/* Fila 3 */
+.ik-card--users{ grid-column: 1; grid-row: 3; min-height: 320px; }
+.ik-card--docs{ grid-column: 2 / span 2; grid-row: 3; min-height: 320px; }
+
+/* ✅ Tintes por card (más profundidad sin romper el estilo) */
+.ik-card--myforms{ --tintCard: rgba(0,160,255,.14); }
+.ik-card--movements{ --tintCard: rgba(120,86,255,.14); }
+.ik-card--inbox{ --tintCard: rgba(0,160,255,.10); }
+.ik-card--users{ --tintCard: rgba(120,86,255,.10); }
+.ik-card--docs{ --tintCard: rgba(0,160,255,.12); }
+
+
+.ik-card{
+  border-radius: var(--radius);
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  overflow: hidden;
+
+  box-shadow: var(--shadow);
+}
+
+/* =========================
+   Form Builder (minimal)
+   ========================= */
+.ik-fb{
+  display: grid;
+  gap: 14px;
+}
+
+.ik-fb__top{
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  border-radius: var(--radius);
+  box-shadow: var(--shadow2);
+  padding: 14px;
+}
+
+.ik-fb__title{
+  height: 46px;
+  font-size: 18px;
+  font-weight: 900;
+
+  /* ✅ Título centrado */
+  text-align: center;
+}
+
+/* ✅ Alineación consistente: todo input a la izquierda, excepto el título */
+.ik-row__input{
+  text-align: left;
+  direction: ltr;
+}
+.ik-row__input.ik-fb__title{
+  text-align: center;
+}
+
+.ik-fb__desc{
+  min-height: 70px;
+  padding-top: 10px;
+  text-align: left;
+  direction: ltr;
+}
+
+
+/* =========================
+   ✅ Form Builder – Cards minimalistas (todas)
+   ========================= */
+
+.ik-q{
+  position: relative;
+  border: 1px solid var(--stroke);
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  box-shadow: var(--shadow2);
+  padding: 14px 14px 12px;
+
+  /* ✅ Ya NO es “clickable” visualmente */
+  cursor: default;
+
+  /* ✅ IMPORTANTE: permite que el popover del tipo se vea sin recortarse */
+  overflow: visible;
+
+  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+}
+
+/* ✅ Los lugares donde sí quieres cursor de edición */
+.ik-q .fb-rich{
+  cursor: text;
+}
+
+/* ✅ Botones/controles sí son “clickeables” */
+.ik-q button,
+.ik-q .ik-typeBtn,
+.ik-q .ik-optAdd,
+.ik-q input,
+.ik-q select,
+.ik-q textarea{
+  cursor: pointer;
+}
+
+.ik-q input,
+.ik-q textarea{
+  cursor: text;
+}
+
+
+
+/* hover: apenas levantamiento */
+.ik-q:hover{
+  transform: translateY(-1px);
+  border-color: rgba(121,86,255,.20);
+  box-shadow: 0 24px 80px rgba(15,23,42,.10);
+}
+
+/* active: halo + barra visible */
+.ik-q.is-active{
+  border-color: rgba(121,86,255,.30);
+  box-shadow:
+    0 0 0 4px rgba(121,86,255,.10),
+    0 28px 100px rgba(15,23,42,.12);
+}
+.ik-q.is-active::before{
+  opacity: 1;
+}
+
+/* ✅ SIEMPRE mostrar el contenido completo (tipo Kobo) */
+.ik-q .ik-q__body{
+  max-height: none;
+  overflow: visible;
+  mask-image: none;
+}
+
+/* ✅ “tinte” real (halo suave) en vez de línea */
+.ik-q{
+  --qTint: rgba(121, 86, 255, .14);
+}
+
+.ik-q:hover{
+  box-shadow:
+    0 24px 80px rgba(15,23,42,.10),
+    0 10px 30px var(--qTint);
+}
+
+.ik-q.is-active{
+  box-shadow:
+    0 0 0 4px rgba(121,86,255,.10),
+    0 28px 100px rgba(15,23,42,.12),
+    0 12px 34px var(--qTint);
+}
+
+/* =========================
+   Dark / Iris – misma vibra
+   ========================= */
+.ik-dashboard.theme-iris .ik-q{
+  border-color: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  box-shadow: 0 24px 100px rgba(0,0,0,.45);
+}
+
+.ik-dashboard.theme-iris .ik-q:hover{
+  border-color: rgba(121,86,255,.22);
+  box-shadow: 0 30px 120px rgba(0,0,0,.55);
+}
+
+.ik-dashboard.theme-iris .ik-q.is-active{
+  border-color: rgba(121,86,255,.28);
+  box-shadow:
+    0 0 0 4px rgba(121,86,255,.14),
+    0 34px 140px rgba(0,0,0,.62);
+}
+
+.ik-dashboard.theme-iris .ik-q::before{
+  background: rgba(121,86,255,.70);
+}
+
+
+/* ✅ acento lateral tipo Google Forms */
+.ik-q::before{
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  background: linear-gradient(180deg, var(--accent), rgba(121,86,255,.35));
+  opacity: .95;
+}
+
+/* ✅ dark/iris: mismo estilo, solo cambia color */
+.ik-dashboard.theme-iris .ik-q{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.10);
+  box-shadow: 0 18px 70px rgba(0,0,0,.40);
+}
+
+
+.ik-q.is-active{
+  border-color: rgba(121,86,255,.35);
+  box-shadow: 0 0 0 4px rgba(121,86,255,.10), var(--shadow2);
+}
+
+.ik-q__head{
+  display: grid;
+  grid-template-columns: 1fr 320px auto auto;
+  gap: 12px;
+  align-items: start;
+}
+
+@media (max-width: 980px){
+  .ik-q__head{
+    grid-template-columns: 1fr;
+  }
+}
+
+
+@media (max-width: 980px){
+  .ik-q__head{
+    grid-template-columns: 1fr;
+  }
+}
+
+
+.ik-q__actions{
+  display: inline-flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.ik-ibtn{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.ik-dashboard.theme-iris .ik-ibtn{
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+}
+
+.ik-ibtn:hover{
+  transform: translateY(-1px);
+}
+/* =========================================================
+   ✅ FormBuilder: Icon-only buttons (sin contenedor visible)
+   ========================================================= */
+.ik-ibtn--iconOnly{
+  width: 34px;
+  height: 34px;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  color: var(--text);
+  opacity: .9;
+}
+
+.ik-ibtn--iconOnly:hover{
+  opacity: 1;
+  transform: translateY(-1px);
+}
+
+.ik-ibtn--iconOnly:active{
+  transform: translateY(0);
+}
+
+.ik-ibtn--iconOnly:focus{ outline: none; }
+.ik-ibtn--iconOnly:focus-visible{
+  box-shadow: 0 0 0 4px rgba(121,86,255,.16);
+}
+
+/* =========================================================
+   ✅ FormBuilder: “Obligatorio” estilo switch (tipo Google)
+   ========================================================= */
+.ik-required{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.ik-required__lbl{
+  font-weight: 900;
+  color: var(--text);
+  opacity: .95;
+}
+
+/* reutiliza tu .ik-switch existente, solo ajusta tamaño aquí */
+.ik-required .ik-switch{
+  width: 46px;
+  height: 26px;
+}
+
+.ik-required .ik-switch__knob{
+  width: 22px;
+  height: 22px;
+}
+
+.ik-required .ik-switch.on .ik-switch__knob{
+  transform: translateX(20px);
+}
+
+/* =========================================================
+   ✅ Options editor (lista real de opciones)
+   ========================================================= */
+.ik-optEditor{
+  display: grid;
+  gap: 10px;
+}
+
+.ik-optRow{
+  display: grid;
+  grid-template-columns: 1fr 34px;
+  gap: 10px;
+  align-items: center;
+}
+
+.ik-optActions{
+  display: inline-flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.ik-optAdd{
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+
+.ik-optAdd:hover{
+  transform: translateY(-1px);
+}
+
+
+.ik-q__details{
+  margin-top: 10px;
+  display: grid;
+  gap: 10px;
+}
+
+.ik-q__details summary{
+  list-style: none;
+  cursor: pointer;
+  font-weight: 900;
+  color: var(--muted);
+}
+
+.ik-q__details summary::-webkit-details-marker{
+  display: none;
+}
+
+/* Drawer */
+.ik-drawer{
+  position: fixed;
+  top: 92px;                 /* debajo de topbar */
+  right: 16px;
+  height: calc(100vh - 110px);
+  width: 420px;
+  max-width: calc(100vw - 32px);
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  box-shadow: 0 24px 90px rgba(0,0,0,.18);
+  overflow: hidden;
+  z-index: 30;
+
+  opacity: 0;
+  transform: translateX(12px);
+  pointer-events: none;
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+/* ✅ Drawer más legible en iris (menos “ver lo de atrás”) */
+.ik-dashboard.theme-iris .ik-drawer{
+  background: rgba(10, 12, 20, .88);
+  backdrop-filter: blur(18px);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 34px 140px rgba(0,0,0,.55);
+}
+
+.ik-dashboard.theme-iris .ik-drawer__body{
+  color: rgba(255,255,255,.92);
+}
+
+.ik-dashboard.theme-iris .ik-drawer .ik-row__input{
+  background: rgba(255,255,255,.08);
+  border-color: rgba(255,255,255,.14);
+  color: rgba(255,255,255,.92);
+}
+
+.ik-drawer.open{
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+}
+
+.ik-drawer__head{
+  padding: 12px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+.ik-dashboard.theme-iris .ik-drawer__head{
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.ik-tabs{
+  display: flex;
+  gap: 8px;
+}
+
+.ik-tab{
+  height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,.06);
+  cursor: pointer;
+  font-weight: 900;
+  color: var(--text);
+}
+
+.ik-tab.active{
+  background: rgba(121,86,255,.14);
+  border-color: rgba(121,86,255,.25);
+}
+
+.ik-drawer__body{
+  padding: 12px;
+  overflow: auto;
+  height: calc(100% - 58px);
+}
+
+
+
+.ik-card:hover{
+  transform: translateY(-1px);
+  border-color: rgba(15, 23, 42, .14);
+  box-shadow:
+    0 24px 85px rgba(15, 23, 42, .12);
+  transition: transform .14s ease, box-shadow .14s ease, border-color .14s ease;
+}
+
+/* ✅ En iris sí podemos ser más dramáticos */
+.ik-dashboard.theme-iris .ik-card:hover{
+  border-color: rgba(255,255,255,.16);
+  box-shadow:
+    0 28px 110px rgba(0,0,0,.46),
+    inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+
+
+/* Widget */
+.ik-widget{ padding: 16px 16px 14px; }
+.ik-widget__head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+.ik-widget__title{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 900;
+  letter-spacing: .4px;
+}
+.ik-widget__icon{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.ik-widget__body{ padding-top: 12px; }
+
+.ik-pill{
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.ik-kv{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 0;
+}
+.ik-kv__k{ color: var(--muted); }
+.ik-kv__v{ font-weight: 900; }
+
+.ik-metricRow{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ik-metric{
+  padding: 12px 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+}
+.ik-metric__n{
+  font-size: 22px;
+  font-weight: 900;
+}
+.ik-metric__l{
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.ik-miniBtn{
+  margin-top: 10px;
+  width: 100%;
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+}
+.ik-miniBtn:hover{
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.14);
+}
+
+.ik-empty{
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Timeline */
+.ik-timeline{
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ik-timeline__item{
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 10px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+}
+.ik-timeline__dot{
+  width: 34px;
+  height: 34px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+}
+.ik-timeline__main{ font-weight: 800; }
+.ik-timeline__ts{ color: var(--muted2); font-size: 12px; margin-top: 4px; }
+
+/* Docs */
+.ik-docgrid{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+.ik-doc{
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+  color: var(--text);
+  cursor: pointer;
+  padding: 12px 10px;
+  text-align: left;
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
+}
+.ik-doc:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.12);
+  transform: translateY(-1px);
+}
+.ik-doc__icon{ font-size: 18px; opacity: .9; }
+.ik-doc__name{ margin-top: 8px; font-weight: 900; font-size: 13px; }
+.ik-doc__meta{ margin-top: 4px; color: var(--muted2); font-size: 12px; }
+
+/* Skeleton */
+.ik-skel__line{
+  height: 12px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.06);
+  margin: 10px 0;
+  overflow: hidden;
+}
+.ik-skel__line.short{ width: 72%; }
+
+/* Responsive */
+@media (max-width: 1200px){
+  .ik-shell{ grid-template-columns: 86px 1fr; }
+  .ik-grid{ grid-template-columns: 1fr; grid-template-rows: auto; }
+  .ik-card--subscription,
+  .ik-card--myforms,
+  .ik-card--movements,
+  .ik-card--users,
+  .ik-card--docs{
+    grid-column: auto;
+    grid-row: auto;
+  }
+  .ik-topbar{ grid-template-columns: 1fr; gap: 10px; }
+  .ik-topbar__mid{ justify-content: stretch; }
+}
+/* Sidebar extras */
+.ik-sideitem.disabled{
+  opacity: .55;
+  cursor: not-allowed;
+}
+.ik-sideitem.disabled:hover{
+  background: rgba(255,255,255,.03);
+  border-color: rgba(255,255,255,.06);
+  transform: none;
+}
+
+.ik-sidebadge{
+  margin-left: auto;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .4px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.78);
+}
+
+.ik-sidesection{ display: flex; flex-direction: column; gap: 8px; }
+.ik-sidesection__title{
+  padding: 6px 10px 2px;
+  font-size: 11px;
+  color: rgba(255,255,255,.50);
+  font-weight: 900;
+  letter-spacing: .35px;
+  text-transform: uppercase;
+}
+.ik-sidesection__items{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+/* Actions bar */
+.ik-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 6px 6px 12px;
+}
+.ik-actionBtn{
+  height: 40px;
+  padding: 0 14px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  color: var(--text);
+  font-weight: 900;
+  letter-spacing: .2px;
+  cursor: pointer;
+  box-shadow: var(--shadow2);
+}
+
+.ik-actionBtn:hover{
+  background: rgba(255,255,255,.07);
+  border-color: rgba(255,255,255,.14);
+}
+.ik-actionBtn.ghost{
+  background: transparent;
+  border-color: var(--stroke);
+  color: var(--muted);
+  box-shadow: none;
+}
+
+
+/* KPI strip */
+.ik-kpis{
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  padding: 0 6px 14px;
+}
+.ik-kpi{
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  padding: 12px 12px;
+  box-shadow: var(--shadow2);
+}
+
+.ik-kpi__n{
+  font-size: 20px;
+  font-weight: 900;
+}
+.ik-kpi__l{
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+
+/* Responsive KPI */
+@media (max-width: 1200px){
+  .ik-kpis{ grid-template-columns: 1fr 1fr; }
+}
+html, body{
+  height: 100%;
+  overflow: hidden; /* ✅ evita scrollbar global */
+}
+.ik-shell.is-collapsed .ik-sidebar{
+  transform: translateX(-2px);
+}
+.ik-brand__img{
+  height: 45px; /* antes 34 */
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 14px 40px rgba(0,0,0,.45));
+  opacity: .98;
+}
+
+/* ✅ Forzar texto/iconos blancos en superficies oscuras */
+.ik-topbar,
+.ik-sidebar,
+.ik-menu{
+  color: var(--onDark);
+}
+
+.ik-topbar .ik-search__input,
+.ik-topbar .ik-search__clear{
+  color: var(--onDark);
+}
+
+.ik-topbar .ik-search__input{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.10);
+}
+.ik-topbar .ik-search__input::placeholder{
+  color: rgba(255,255,255,.55);
+}
+
+.ik-sidebar .ik-sideitem{
+  color: var(--onDark);
+  border-color: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+}
+.ik-sidebar .ik-sideitem:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
+}
+
+.ik-sidebar .ik-sidesection__title{
+  color: rgba(255,255,255,.55);
+}
+
+/* El badge y footer del sidebar también */
+.ik-sidebadge{
+  color: rgba(255,255,255,.80);
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+}
+.ik-sidebar__foot{
+  border-color: rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+}
+.ik-foot__v{
+  color: rgba(255,255,255,.70);
+}
+/* ===== Switch universal: OFF rojo / ON verde (igual en light y dark) ===== */
+.ik-row--toggle{
+  cursor: pointer;
+}
+
+.ik-switch{
+  width: 44px;
+  height: 24px;
+  border-radius: 999px;
+
+  /* OFF = ROJO */
+  border: 1px solid rgba(220, 38, 38, .45);
+  background: rgba(220, 38, 38, .22);
+
+  display: inline-flex;
+  align-items: center;
+  padding: 2px;
+
+  transition: background 160ms ease, border-color 160ms ease;
+}
+
+.ik-switch__knob{
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+
+  /* knob siempre visible */
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 6px 16px rgba(0,0,0,.22);
+
+  transform: translateX(0);
+  transition: transform 180ms cubic-bezier(.2,.9,.2,1), background 160ms ease;
+}
+
+.ik-switch.on{
+  /* ON = VERDE */
+  border-color: rgba(34, 197, 94, .55);
+  background: rgba(34, 197, 94, .24);
+}
+
+.ik-switch.on .ik-switch__knob{
+  transform: translateX(20px);
+}
+
+
+/* ===== Iris theme (tornasol oscuro) ===== */
+.ik-dashboard.theme-iris{
+  --bg0: #070810;
+  --bg1: #0b0d17;
+  --paper: rgba(255,255,255,.06);
+  --paper2: rgba(255,255,255,.08);
+
+  --stroke: rgba(255,255,255,.10);
+  --stroke2: rgba(255,255,255,.14);
+
+  --text: rgba(255,255,255,.92);
+  --muted: rgba(255,255,255,.62);
+  --muted2: rgba(255,255,255,.48);
+
+  --shadow: 0 24px 100px rgba(0,0,0,.40);
+  --shadow2: 0 14px 50px rgba(0,0,0,.30);
+}
+
+.ik-dashboard.theme-iris .ik-dashboard{
+  color: var(--text);
+}
+/* =========================
+   Performance + Calendar widgets
+   ========================= */
+
+.ik-perf{
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 12px;
+}
+
+.ik-perf__kpis{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.ik-perf__kpi{
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  padding: 12px 12px;
+}
+.ik-perf__n{
+  font-size: 22px;
+  font-weight: 900;
+}
+.ik-perf__l{
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.ik-spark{
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  padding: 12px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.ik-spark__title{
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+.ik-spark__bars{
+  height: 140px;
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 6px;
+  align-items: end;
+}
+.ik-spark__bar{
+  border-radius: 10px;
+  background: linear-gradient(180deg, rgba(121,86,255,.85), rgba(86,97,246,.55));
+  opacity: .9;
+}
+.ik-spark__meta{
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Calendar */
+.ik-cal__week{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ik-cal__w{
+  font-size: 11px;
+  font-weight: 900;
+  color: var(--muted);
+  text-align: center;
+}
+
+.ik-cal__grid{
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.ik-cal__day{
+  height: 36px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  color: var(--text);
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform .12s ease, background .12s ease, border-color .12s ease;
+}
+.ik-cal__day:hover{
+  transform: translateY(-1px);
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.12);
+}
+.ik-cal__day.is-today{
+  background: rgba(121,86,255,.18);
+  border-color: rgba(121,86,255,.28);
+}
+.ik-cal__day.is-out{
+  opacity: .35;
+  pointer-events: none;
+}
+
+.ik-cal__hint{
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* Responsive: performance a una columna */
+@media (max-width: 1200px){
+  .ik-perf{ grid-template-columns: 1fr; }
+}
+/* =========================================================
+   ✅ FORMS: TypePicker (Google/Kobo style) + Dark select fix
+   ========================================================= */
+
+/* (1) FIX: <select> en dark (options legibles) */
+.ik-dashboard.theme-iris select.ik-row__input,
+.ik-dashboard.theme-iris select.ik-row__input:focus{
+  color: rgba(255,255,255,.92);
+}
+.ik-dashboard.theme-iris select.ik-row__input option{
+  background: #0b0d17;
+  color: rgba(255,255,255,.92);
+}
+
+/* (2) Botón selector de tipo (en vez de <select>) */
+.ik-typeBtn{
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  color: var(--text);
+  font-weight: 900;
+  letter-spacing: .2px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 0 12px;
+  box-shadow: var(--shadow2);
+  width: 100%;
+}
+.ik-dashboard.theme-iris .ik-typeBtn{
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  box-shadow: var(--shadow2);
+}
+
+.ik-typeBtn__left{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.ik-typeLbl{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ik-typeCaret{
+  opacity: .75;
+  flex: 0 0 auto;
+}
+
+/* ✅ ICONOS: sin recuadro, solo el icono */
+.ik-typeIc,
+.ik-typePopItem__ic,
+.ik-typeItem__ic{
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  border: 0 !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+}
+
+/* (3) Popover rápido */
+.ik-typeWrap{ position: relative; }
+
+.ik-typePop{
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 60;
+  width: 100%;
+  min-width: 240px;
+}
+
+.ik-typePop__panel{
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  box-shadow: 0 24px 90px rgba(0,0,0,.18);
+  overflow: hidden;
+}
+.ik-dashboard.theme-iris .ik-typePop__panel{
+  background: rgba(10,12,20,.92);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 34px 140px rgba(0,0,0,.55);
+  backdrop-filter: blur(16px);
+}
+
+.ik-typePop__grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+
+  /* ✅ siempre se ven TODOS los tipos */
+  max-height: 340px;
+  overflow: auto;
+
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.ik-typePop__grid::-webkit-scrollbar{
+  width: 0;
+  height: 0;
+}
+
+@media (max-width: 720px){
+  .ik-typePop__grid{ grid-template-columns: 1fr; }
+}
+
+.ik-typePopItem{
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 10px 12px;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+.ik-dashboard.theme-light .ik-typePopItem{
+  border-top: 1px solid rgba(15,23,42,.08);
+}
+.ik-typePopItem:hover{ background: rgba(255,255,255,.06); }
+.ik-dashboard.theme-iris .ik-typePopItem:hover{ background: rgba(255,255,255,.08); }
+
+.ik-typePopItem__txt{
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ik-typePop__footer{
+  padding: 10px;
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+.ik-dashboard.theme-iris .ik-typePop__footer{
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+
+.ik-typeMoreBtn{
+  width: 100%;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 900;
+}
+.ik-dashboard.theme-iris .ik-typeMoreBtn{
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+}
+.ik-typeMoreBtn:hover{ transform: translateY(-1px); }
+
+/* (4) Modal grande */
+.ik-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(8px);
+}
+
+.ik-modal__panel{
+  width: min(720px, 100%);
+  max-height: min(76vh, 820px);
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  box-shadow: 0 34px 140px rgba(0,0,0,.28);
+}
+.ik-dashboard.theme-iris .ik-modal__panel{
+  background: rgba(10,12,20,.92);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 34px 160px rgba(0,0,0,.65);
+}
+
+.ik-modal__head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+.ik-dashboard.theme-iris .ik-modal__head{
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+.ik-modal__title{
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+.ik-modal__body{
+  padding: 12px;
+  overflow: auto;
+  max-height: calc(76vh - 60px);
+}
+
+.ik-typeMenu__grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 720px){
+  .ik-typeMenu__grid{ grid-template-columns: 1fr; }
+}
+
+.ik-typeItem{
+  appearance: none;
+  border: 1px solid rgba(255,255,255,.06);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 12px 12px;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border-radius: 14px;
+  margin: 6px 0;
+}
+.ik-dashboard.theme-light .ik-typeItem{
+  border: 1px solid rgba(15,23,42,.10);
+}
+.ik-typeItem:hover{ background: rgba(255,255,255,.06); }
+.ik-dashboard.theme-iris .ik-typeItem:hover{ background: rgba(255,255,255,.08); }
+
+.ik-typeItem__title{ font-weight: 900; }
+.ik-typeItem__sub{
+  font-size: 12px;
+  opacity: .70;
+  margin-top: 2px;
+}
+
+/* (5) Preview del builder */
+.ik-preview{
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 14px;
+  border: 1px dashed rgba(255,255,255,.16);
+  background: rgba(255,255,255,.03);
+}
+.ik-dashboard.theme-light .ik-preview{
+  border-color: rgba(15,23,42,.20);
+  background: rgba(15,23,42,.03);
+}
+.ik-preview__hint{
+  font-size: 12px;
+  opacity: .75;
+  font-weight: 800;
+  margin-top: 6px;
+}
+
+/* chips preview */
+.ik-chipRow{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.ik-chipMini{
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  font-weight: 900;
+  font-size: 12px;
+}
+.ik-dashboard.theme-light .ik-chipMini{
+  border-color: rgba(15,23,42,.14);
+  background: rgba(15,23,42,.05);
+}
+
+/* =========================
+   ✅ TypePicker HÍBRIDO (popover rápido)
+   ========================= */
+
+.ik-typeWrap{
+  position: relative;
+}
+
+.ik-typePop{
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  z-index: 60;
+  width: 100%;
+  min-width: 240px;
+}
+
+.ik-typePop__panel{
+  border-radius: 16px;
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  box-shadow: 0 24px 90px rgba(0,0,0,.18);
+  overflow: hidden;
+}
+
+.ik-dashboard.theme-iris .ik-typePop__panel{
+  background: rgba(10,12,20,.92);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 34px 140px rgba(0,0,0,.55);
+  backdrop-filter: blur(16px);
+}
+
+.ik-typePop__grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+@media (max-width: 720px){
+  .ik-typePop__grid{
+    grid-template-columns: 1fr;
+  }
+}
+
+.ik-typePopItem{
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 10px 10px;
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 10px;
+  align-items: center;
+  text-align: left;
+  border-top: 1px solid rgba(255,255,255,.06);
+}
+
+.ik-dashboard.theme-light .ik-typePopItem{
+  border-top: 1px solid rgba(15,23,42,.08);
+}
+
+.ik-typePopItem:hover{
+  background: rgba(255,255,255,.06);
+}
+
+.ik-dashboard.theme-iris .ik-typePopItem:hover{
+  background: rgba(255,255,255,.08);
+}
+
+.ik-typePopItem__ic{
+  width: 34px;
+  height: 34px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+}
+
+.ik-dashboard.theme-light .ik-typePopItem__ic{
+  border-color: rgba(15,23,42,.12);
+  background: rgba(15,23,42,.05);
+}
+
+.ik-typePopItem__txt{
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ik-typePop__footer{
+  padding: 10px;
+  border-top: 1px solid rgba(0,0,0,.06);
+}
+
+.ik-dashboard.theme-iris .ik-typePop__footer{
+  border-top: 1px solid rgba(255,255,255,.10);
+}
+
+.ik-typeMoreBtn{
+  width: 100%;
+  height: 40px;
+  border-radius: 14px;
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  cursor: pointer;
+  font-weight: 900;
+}
+
+.ik-dashboard.theme-iris .ik-typeMoreBtn{
+  border-color: rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+}
+
+.ik-typeMoreBtn:hover{
+  transform: translateY(-1px);
+}
+
+/* =========================
+   ✅ MODAL BASE (TypePicker)
+   ========================= */
+.ik-modal{
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+
+  background: rgba(0,0,0,.45);
+  backdrop-filter: blur(8px);
+}
+
+.ik-modal__panel{
+  width: min(720px, 100%);
+  max-height: min(76vh, 820px);
+  overflow: hidden;
+  border-radius: 18px;
+  border: 1px solid var(--stroke);
+  background: linear-gradient(180deg, var(--paper), var(--paper2));
+  box-shadow: 0 34px 140px rgba(0,0,0,.28);
+}
+
+.ik-dashboard.theme-iris .ik-modal__panel{
+  background: rgba(10,12,20,.92);
+  border-color: rgba(255,255,255,.12);
+  box-shadow: 0 34px 160px rgba(0,0,0,.65);
+}
+
+.ik-modal__head{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.06);
+}
+
+.ik-dashboard.theme-iris .ik-modal__head{
+  border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+.ik-modal__title{
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+.ik-modal__body{
+  padding: 12px;
+  overflow: auto;
+  max-height: calc(76vh - 60px);
+}
+
+/* ✅ en modal: grid más amplio */
+.ik-modal .ik-typeMenu__grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+@media (max-width: 720px){
+  .ik-modal .ik-typeMenu__grid{ grid-template-columns: 1fr; }
+}
+
+/* ✅ opcional: que los items se vean más "listado" */
+.ik-modal .ik-typeItem{
+  border-radius: 14px;
+  margin: 6px 0;
+  border: 1px solid rgba(255,255,255,.06);
+}
+.ik-dashboard.theme-light .ik-modal .ik-typeItem{
+  border: 1px solid rgba(15,23,42,.10);
+}
+/* ✅ Control limpio estilo Google */
+.ik-q__control{
+  padding: 0;
+  margin-top: 2px;
+}
+
+/* ✅ que el input/select/textarea “preview” se vea como un control real */
+.ik-q__control .ik-row__input,
+.ik-q__control input,
+.ik-q__control select,
+.ik-q__control textarea{
+  border-radius: 14px;
+}
+
+/* ✅ labels (radio/checkbox) más limpias */
+.ik-q__control label{
+  font-weight: 800 !important;
+}
+/* =========================
+   Type menu inline (reemplaza contenido de card)
+   ========================= */
+.ik-typeInline{
+  display: grid;
+  gap: 12px;
+}
+
+.ik-typeInline__top{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ik-typeInline__title{
+  font-weight: 950;
+  letter-spacing: .2px;
+}
+
+.ik-typeInline__grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+@media (max-width: 720px){
+  .ik-typeInline__grid{ grid-template-columns: 1fr; }
+}
+
+.ik-typeInline__item{
+  border: 1px solid var(--stroke);
+  background: rgba(255,255,255,.06);
+  border-radius: 16px;
+  padding: 12px 12px;
+  display: grid;
+  grid-template-columns: 22px 1fr;
+  gap: 10px;
+  align-items: center;
+  cursor: pointer;
+  font-weight: 900;
+  text-align: left;
+}
+
+.ik-typeInline__item:hover{
+  transform: translateY(-1px);
+  border-color: rgba(121,86,255,.22);
+}
+
+.ik-typeInline__ic{
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+}
+
+.ik-typeInline__txt{
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

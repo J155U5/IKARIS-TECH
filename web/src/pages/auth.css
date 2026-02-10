@@ -1,0 +1,934 @@
+/* ✅ Vars SOLO para pantallas Auth (evita choque con dashboard.css) */
+.auth-wrap{
+  --bg: #070A12;
+  --card: rgba(255,255,255,.06);
+  --card2: rgba(255,255,255,.08);
+  --border: rgba(255,255,255,.10);
+  --text: #EAF0FF;
+  --muted: rgba(234,240,255,.72);
+  --accent: #7C3AED; /* morado */
+  --accent2: #22D3EE; /* cyan */
+  --danger: #FF4D4D;
+  --ok: #2EE59D;
+}
+
+*{ box-sizing:border-box; }
+body{
+  margin:0;
+  font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+
+  /* ✅ hardcode para no depender de vars globales */
+  background:
+    radial-gradient(1200px 700px at 20% 10%, rgba(124,58,237,.35), transparent 60%),
+    radial-gradient(900px 600px at 90% 20%, rgba(34,211,238,.22), transparent 60%),
+    radial-gradient(800px 700px at 60% 100%, rgba(124,58,237,.25), transparent 60%),
+    #070A12;
+  color: #EAF0FF;
+}
+
+
+.auth-wrap{
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+    padding:16px;
+
+}
+
+.auth-card{
+  width: min(1100px, 100%);
+  display:grid;
+  grid-template-columns: 1.1fr .9fr;
+  border: 1px solid var(--border);
+  background: rgba(255,255,255,.04);
+  backdrop-filter: blur(14px);
+  border-radius: 22px;
+  overflow:hidden;
+  box-shadow: 0 40px 120px rgba(0,0,0,.55);
+}
+
+.auth-left{
+  padding:34px 34px 22px;
+
+  /* ✅ fondo más oscuro para que el texto claro se lea perfecto */
+  background:
+    radial-gradient(900px 520px at 18% 10%, rgba(124,58,237,.22), transparent 62%),
+    radial-gradient(800px 520px at 86% 18%, rgba(34,211,238,.16), transparent 62%),
+    linear-gradient(180deg, rgba(0,0,0,.38), rgba(0,0,0,.22));
+}
+
+.auth-right{
+  padding:34px;
+  background: radial-gradient(800px 500px at 20% 10%, rgba(124,58,237,.35), transparent 60%),
+              radial-gradient(700px 500px at 90% 20%, rgba(34,211,238,.25), transparent 60%),
+              rgba(0,0,0,.25);
+  border-left:1px solid var(--border);
+  display:flex;
+  align-items:flex-end;
+}
+
+.auth-right-inner{
+  width:100%;
+  padding:18px;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;
+  background: rgba(0,0,0,.28);
+}
+
+.auth-right-title{
+  font-size:20px;
+  font-weight:800;
+  letter-spacing:.3px;
+}
+.auth-right-text{
+  margin-top:8px;
+  color: var(--muted);
+  line-height:1.5;
+  font-size:14px;
+}
+
+.auth-right-badges{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:14px;
+}
+
+.badge{
+  font-size:12px;
+  padding:8px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: rgba(234,240,255,.90);
+}
+
+.auth-brand{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:18px;
+}
+
+.auth-logo{
+  width:42px;
+  height:42px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:12px;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  color:#041018;
+  font-weight:900;
+}
+
+.auth-name{
+  font-weight:900;
+  letter-spacing:1px;
+  line-height:1;
+}
+.auth-tag{
+  font-size:12px;
+  opacity:.75;
+  margin-top:2px;
+}
+
+.auth-title{
+  margin: 10px 0 6px;
+  font-size:28px;
+  letter-spacing:.2px;
+}
+.auth-subtitle{
+  margin: 0 0 18px;
+  color: var(--muted);
+  line-height:1.5;
+}
+
+.auth-form{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+.row2{
+  display:grid;
+  gap:12px;
+  grid-template-columns: 1fr 1fr;
+}
+
+@media (max-width: 900px){
+  .auth-card{ grid-template-columns: 1fr; }
+  .auth-right{ display:none; }
+  .row2{ grid-template-columns:1fr; }
+}
+
+.label{
+  font-size:12px;
+  color: rgba(234,240,255,.78);
+  margin-bottom:6px;
+}
+
+.input, .select{
+  width:100%;
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.20);
+  color: var(--text);
+  outline:none;
+  font-weight: 700;
+}
+
+/* ✅ dropdown del select (opciones) */
+.select option{
+  background: #0b0f1d;      /* oscuro */
+  color: #EAF0FF;           /* texto claro */
+  font-weight: 700;
+}
+
+/* En algunos navegadores ayuda a evitar menú blanco */
+.select{
+  color-scheme: dark;
+}
+
+.input:focus, .select:focus{
+  border-color: rgba(34,211,238,.55);
+  box-shadow: 0 0 0 4px rgba(34,211,238,.12);
+}
+
+.btn{
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background: linear-gradient(135deg, var(--accent), rgba(124,58,237,.65));
+  color:white;
+  font-weight:800;
+  letter-spacing:.3px;
+  cursor:pointer;
+}
+.btn:disabled{
+  opacity:.6;
+  cursor:not-allowed;
+}
+
+.btn-ghost{
+  width:100%;
+  padding:12px 14px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.06);
+  color: var(--text);
+  font-weight:700;
+  cursor:pointer;
+}
+
+.divider{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin:10px 0;
+  color: rgba(234,240,255,.55);
+  font-size:12px;
+}
+.divider::before, .divider::after{
+  content:"";
+  height:1px;
+  flex:1;
+  background: rgba(255,255,255,.12);
+}
+
+.alert{
+  padding:12px 12px;
+  border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.25);
+  color: rgba(234,240,255,.92);
+}
+.alert.error{
+  border-color: rgba(255,77,77,.35);
+  box-shadow: 0 0 0 4px rgba(255,77,77,.10);
+}
+.alert.ok{
+  border-color: rgba(46,229,157,.25);
+  box-shadow: 0 0 0 4px rgba(46,229,157,.10);
+}
+
+.small{
+  font-size:12px;
+  color: rgba(234,240,255,.70);
+  line-height:1.5;
+}
+
+.linkrow{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:8px;
+  font-size:12px;
+}
+.a{
+  color: rgba(34,211,238,.92);
+  text-decoration:none;
+}
+.a:hover{ text-decoration:underline; }
+
+.check{
+  display:flex;
+  gap:10px;
+  align-items:flex-start;
+  font-size:12px;
+  color: rgba(234,240,255,.78);
+  line-height:1.35;
+}
+.check input{
+  margin-top:2px;
+}
+/* ---- Password UI ---- */
+.pw-wrap {
+  position: relative;
+}
+
+.pw-input {
+  padding-right: 44px; /* espacio para el ojo */
+}
+
+.pw-eye {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  line-height: 1;
+  opacity: 0.9;
+}
+
+.pw-eye:hover {
+  opacity: 1;
+}
+
+.pw-float{
+  position:absolute;
+  z-index:20;
+  left:0;
+  top:calc(100% + 8px);
+  width:100%;
+  border-radius:14px;
+  padding:12px 12px;
+
+  /* ✅ morado tornasol */
+  background: radial-gradient(900px 500px at 20% 10%, rgba(124,58,237,.55), transparent 60%),
+              radial-gradient(700px 500px at 90% 20%, rgba(34,211,238,.30), transparent 60%),
+              rgba(0,0,0,.55);
+
+  border:1px solid rgba(255,255,255,.14);
+  box-shadow: 0 16px 45px rgba(0,0,0,.55);
+  backdrop-filter: blur(10px);
+}
+
+.pw-title{
+  font-size:12px;
+  font-weight: 900;   /* ✅ negrita */
+  margin-bottom:8px;
+  color: rgba(234,240,255,.95);
+}
+
+.pw-item{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  font-size:12px;
+  padding:4px 0;
+  font-weight: 800;   /* ✅ negrita */
+  color: rgba(234,240,255,.92);
+}
+
+.pw-title {
+  font-size: 12px;
+  opacity: 0.9;
+  margin-bottom: 8px;
+}
+
+.pw-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 12px;
+  padding: 4px 0;
+  opacity: 0.95;
+}
+
+.pw-item.ok {
+  opacity: 1;
+}
+
+.pw-item.bad {
+  opacity: 0.85;
+}
+
+/* ---- Minimal Icons (no emojis) ---- */
+
+/* ojo minimalista */
+.eye-ic {
+  width: 18px;
+  height: 18px;
+  display: inline-block;
+  opacity: 0.9;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 18px 18px;
+  /* ojo "cerrado": */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z'/><path d='M4 4l16 16'/></svg>");
+}
+
+.eye-ic.on {
+  /* ojo "abierto": */
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'><path d='M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z'/><circle cx='12' cy='12' r='3'/></svg>");
+}
+
+/* ✅ Iconos simples: solo X roja / palomita verde */
+.pw-dot {
+  width: 16px;
+  height: 16px;
+  display: inline-block;
+  position: relative;
+  flex: 0 0 16px;
+}
+
+/* Palomita (verde) */
+.pw-item.ok .pw-dot::after {
+  content: "";
+  position: absolute;
+  left: 4px;
+  top: 1px;
+  width: 6px;
+  height: 10px;
+  border-right: 2px solid var(--ok);
+  border-bottom: 2px solid var(--ok);
+  transform: rotate(45deg);
+}
+
+/* X (roja) */
+.pw-item.bad .pw-dot::before,
+.pw-item.bad .pw-dot::after {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 2px;
+  width: 2px;
+  height: 12px;
+  background: var(--danger);
+  border-radius: 2px;
+}
+
+.pw-item.bad .pw-dot::before {
+  transform: rotate(45deg);
+}
+.pw-item.bad .pw-dot::after {
+  transform: rotate(-45deg);
+}
+
+
+/* mejora el botón ojo para que se vea más "icon button" */
+.pw-eye {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+}
+
+.pw-eye:hover {
+  background: rgba(255,255,255,.10);
+}
+/* ---- Select dropdown dark (mejora lista blanca) ---- */
+.select {
+  font-weight: 800;
+  color-scheme: dark; /* ayuda a forzar UI oscura en controles nativos */
+}
+
+/* menú desplegable (opciones) */
+.select option,
+.select optgroup {
+  background: #0b1020;   /* oscuro */
+  color: #EAF0FF;
+  font-weight: 800;
+}
+
+/* en algunos navegadores el dropdown usa este highlight */
+.select option:checked {
+  background: #2b155f;
+  color: #EAF0FF;
+}
+/* ✅ Register (y cualquier pantalla que use hideRight): modo 1 columna + más compacto */
+.auth-card--single{
+  grid-template-columns: 1fr !important;
+  width: min(980px, 100%); /* ensancha el card */
+}
+
+.auth-card--single .auth-left{
+  padding: 26px 28px 18px; /* menos padding para que quepa todo */
+}
+
+/* reduce espacios entre campos */
+.auth-card--single .auth-form{
+  gap: 10px;
+}
+
+/* reduce tamaño del título/subtítulo */
+.auth-card--single .auth-title{
+  font-size: 24px;
+  margin: 6px 0 4px;
+}
+.auth-card--single .auth-subtitle{
+  margin: 0 0 12px;
+}
+
+/* inputs/botones más compactos */
+.auth-card--single .input,
+.auth-card--single .select{
+  padding: 10px 12px;
+}
+
+.auth-card--single .btn,
+.auth-card--single .btn-ghost{
+  padding: 10px 14px;
+}
+
+/* checkbox compacto */
+.auth-card--single .check{
+  font-size: 11.5px;
+}
+/* =========================
+   Profile menu (Facebook-like)
+   ========================= */
+
+.ik-profile__name{
+  font-size: 12px;
+  font-weight: 900;
+  opacity: .92;
+}
+
+/* avatar con imagen */
+.ik-avatar{ overflow: hidden; }
+.ik-avatar__img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* menú con animación tipo sidebar */
+.ik-menu--profile{
+  width: 360px;
+  right: 0;
+  top: 52px;
+
+  /* estado cerrado */
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
+
+  transition: opacity 260ms cubic-bezier(.2,.9,.2,1), transform 260ms cubic-bezier(.2,.9,.2,1);
+  will-change: opacity, transform;
+}
+
+.ik-menu--profile.open{
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.ik-menu__card{
+  padding: 12px;
+}
+
+.ik-menu__hero{
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 10px 12px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.ik-menu__avatarBig{
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.08);
+  display: grid;
+  place-items: center;
+  position: relative;
+  font-weight: 900;
+}
+
+.ik-avatarBig__img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ik-avatarBig__cam{
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  width: 28px;
+  height: 28px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.35);
+  color: rgba(255,255,255,.92);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.ik-avatarBig__cam:hover{
+  background: rgba(255,255,255,.08);
+}
+
+.ik-menu__who{
+  min-width: 0;
+}
+.ik-menu__name{
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+.ik-menu__sub{
+  margin-top: 2px;
+  font-size: 12px;
+  color: rgba(255,255,255,.62);
+}
+
+.ik-menu__rows{
+  padding: 10px 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ik-row{
+  display: grid;
+  grid-template-columns: 22px 90px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+}
+
+.ik-row__ic{ opacity: .9; display: grid; place-items: center; }
+.ik-row__k{ color: rgba(255,255,255,.60); font-weight: 900; font-size: 12px; }
+.ik-row__v{ font-weight: 800; font-size: 12px; opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.ik-row--edit{
+  grid-template-columns: 22px 90px 1fr;
+}
+.ik-row__input{
+  height: 34px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.92);
+  padding: 0 10px;
+  outline: none;
+}
+.ik-row__input:focus{
+  border-color: rgba(120,86,255,.35);
+  box-shadow: 0 0 0 4px rgba(120,86,255,.12);
+}
+
+.ik-menu__actions{
+  padding: 10px 10px 2px;
+}
+
+/* =========================
+   Dashboard grid: nueva card Inbox
+   ========================= */
+.ik-card--inbox{ grid-column: 3; grid-row: 1; min-height: 180px; }
+
+/* checklist widget */
+.ik-checklist{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+}
+.ik-check{
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+}
+.ik-check__dot{
+  width: 22px;
+  height: 22px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  font-weight: 900;
+}
+.ik-check.ok .ik-check__dot{
+  background: rgba(120,86,255,.14);
+  border-color: rgba(120,86,255,.20);
+}
+.ik-check__txt{
+  font-weight: 800;
+  font-size: 13px;
+  opacity: .92;
+}
+
+/* Ajuste: al quitar el pagehead, pega todo arriba */
+.ik-home{
+  padding-top: 2px;
+}
+/* =========================
+   PROFILE MENU (pro / FB-like)
+========================= */
+
+.ik-profile__sub{
+  font-size: 11px;
+  color: rgba(255,255,255,.62);
+  margin-top: 2px;
+  max-width: 220px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ik-avatar__img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 12px;
+  display: block;
+}
+
+/* menú más grande y legible */
+.ik-menu--profile{
+  width: 420px;
+  max-width: calc(100vw - 22px);
+  top: 52px;
+  z-index: 50;
+
+  /* animación tipo sidebar */
+  opacity: 0;
+  transform: translateY(-8px) scale(.985);
+  pointer-events: none;
+  transition: opacity 220ms cubic-bezier(.2,.9,.2,1), transform 220ms cubic-bezier(.2,.9,.2,1);
+}
+
+.ik-menu--profile.open{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+.ik-menu__card{
+  padding: 14px;
+}
+
+.ik-menu__hero{
+  display: grid;
+  grid-template-columns: 86px 1fr;
+  gap: 12px;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+}
+
+.ik-menu__avatarBig{
+  width: 78px;
+  height: 78px;
+  border-radius: 22px;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.10);
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.ik-avatarBig__img{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.ik-avatarBig__cam{
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.35);
+  color: rgba(255,255,255,.92);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.ik-menu__who .ik-menu__name{
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  line-height: 1.1;
+}
+
+.ik-menu__who .ik-menu__sub{
+  margin-top: 4px;
+  color: rgba(255,255,255,.60);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ik-menu__rows{
+  margin-top: 12px;
+  display: grid;
+  gap: 10px;
+}
+
+.ik-row{
+  display: grid;
+  grid-template-columns: 34px 80px 1fr;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 10px;
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.06);
+  background: rgba(255,255,255,.03);
+}
+
+.ik-row__ic{
+  width: 34px;
+  height: 34px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.08);
+}
+
+.ik-row__k{
+  color: rgba(255,255,255,.62);
+  font-weight: 900;
+  font-size: 12px;
+}
+
+.ik-row__v{
+  font-weight: 900;
+  color: rgba(255,255,255,.92);
+  text-align: right;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+/* input alineado y sin romper layout */
+.ik-row--edit{
+  grid-template-columns: 34px 80px 1fr;
+}
+
+.ik-row__input{
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(0,0,0,.20);
+  color: rgba(255,255,255,.92);
+  outline: none;
+  padding: 0 10px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.ik-row__input::placeholder{
+  color: rgba(255,255,255,.35);
+  font-weight: 800;
+}
+
+.ik-row__input:focus{
+  border-color: rgba(120,86,255,.35);
+  box-shadow: 0 0 0 4px rgba(120,86,255,.12);
+}
+
+.ik-menu__actions{
+  margin-top: 12px;
+}
+
+.ik-menu__actions .ik-menu__item{
+  border-radius: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  background: rgba(255,255,255,.03);
+  padding: 12px 12px;
+}
+/* Teléfono: modo view (se ve igual que Correo/Empresa) */
+.ik-row__valueBtn{
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.ik-row__valueBtn:hover .ik-row__v{
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  opacity: .95;
+}
+
+.ik-row__hint{
+  grid-column: 1 / -1;
+  margin-top: 6px;
+  font-size: 11px;
+  color: rgba(255,255,255,.55);
+  text-align: right;
+}
+.pw-wrap{
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+.pw-input{
+  padding-right: 44px !important;
+}
+.pw-eye{
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.04);
+  color: rgba(255,255,255,.85);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+.pw-eye:hover{
+  background: rgba(255,255,255,.06);
+  border-color: rgba(255,255,255,.14);
+}
+.auth-title{ color: rgba(234,240,255,.95); }
+.auth-subtitle{ color: rgba(234,240,255,.72); }
