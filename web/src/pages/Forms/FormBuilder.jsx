@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { apiFetch } from "../../api";
 import DashboardLayout from "../Dashboard/DashboardLayout";
 import { useNavigate, useParams } from "react-router-dom";
@@ -36,7 +36,6 @@ import {
   MdFormatItalic,
   MdFormatUnderlined,
   MdFormatColorText,
-  MdImage,
 } from "react-icons/md";
 
 
@@ -366,76 +365,7 @@ function normalizeField(f) {
   };
 
 }
-function TypePicker({ value, onChange }) {
-  const meta = getTypeMeta(value);
 
-  const [open, setOpen] = useState(false);
-  const wrapRef = useRef(null);
-
-  useEffect(() => {
-    function onKey(e) {
-      if (e.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
-  }, []);
-
-  useEffect(() => {
-    function onDown(e) {
-      if (!open) return;
-      const el = wrapRef.current;
-      if (!el) return;
-      if (!el.contains(e.target)) setOpen(false);
-    }
-    document.addEventListener("mousedown", onDown);
-    return () => document.removeEventListener("mousedown", onDown);
-  }, [open]);
-
-  return (
-    <div className="ik-typeWrap" ref={wrapRef}>
-      <button
-        type="button"
-        className="ik-typeBtn"
-        onClick={(e) => {
-          e.stopPropagation();
-          setOpen((v) => !v);
-        }}
-        title="Tipo de pregunta"
-      >
-        <span className="ik-typeBtn__left">
-          <span className="ik-typeIc">{meta.icon}</span>
-          <span className="ik-typeLbl">{meta.label}</span>
-        </span>
-        <span className="ik-typeCaret">
-          <FiChevronDown />
-        </span>
-      </button>
-
-      {open ? (
-        <div className="ik-typePop" onClick={(e) => e.stopPropagation()}>
-          <div className="ik-typePop__panel">
-            <div className="ik-typePop__grid">
-              {FIELD_TYPES.map((t) => (
-                <button
-                  key={t.k}
-                  type="button"
-                  className="ik-typePopItem"
-                  onClick={() => {
-                    onChange(t.k);
-                    setOpen(false);
-                  }}
-                >
-                  <span className="ik-typePopItem__ic">{t.icon}</span>
-                  <span className="ik-typePopItem__txt">{t.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : null}
-    </div>
-  );
-}
 
 
 
