@@ -1,0 +1,17 @@
+{
+  "files": {
+    "main.css": "/static/css/main.0152b5ff.css",
+    "main.js": "/static/js/main.997bf6c6.js",
+    "static/js/453.9d77d8c1.chunk.js": "/static/js/453.9d77d8c1.chunk.js",
+    "static/media/IKARIS_ST.png": "/static/media/IKARIS_ST.c7c8aa32da2150aa0512.png",
+    "static/media/ikaris-tech.png": "/static/media/ikaris-tech.3ad31d4fe8b8829a5fe1.png",
+    "index.html": "/index.html",
+    "main.0152b5ff.css.map": "/static/css/main.0152b5ff.css.map",
+    "main.997bf6c6.js.map": "/static/js/main.997bf6c6.js.map",
+    "453.9d77d8c1.chunk.js.map": "/static/js/453.9d77d8c1.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.0152b5ff.css",
+    "static/js/main.997bf6c6.js"
+  ]
+}
