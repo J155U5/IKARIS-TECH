@@ -37,9 +37,10 @@ app.use("/api/lookups", lookupsRoutes); // ✅ AÑADIDO
 
 // ✅ SERVIR FRONTEND (React build)
 // index.js está en: /server/src/index.js
-// build está en: /web/build
-const buildPath = path.join(__dirname, "../../web/build");
+// build está en: /server/build
+const buildPath = path.join(__dirname, "../build");
 app.use(express.static(buildPath));
+
 
 // ✅ Fallback SPA: cualquier ruta que NO sea /api -> index.html
 app.get("*", (req, res) => {
