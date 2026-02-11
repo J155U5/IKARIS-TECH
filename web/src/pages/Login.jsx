@@ -28,43 +28,37 @@ useEffect(() => {
 
   async function boot() {
     try {
-      const { data } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.getSession();
       if (!alive) return;
 
+      // ✅ Si Supabase detecta refresh token inválido, limpiamos y nos quedamos en /login
+      if (error) {
+        const msg = String(error?.message || "").toLowerCase();
+        if (msg.includes("refresh token") || msg.includes("invalid")) {
+          try { await supabase.auth.signOut(); } catch (_) {}
+          return; // NO redirigir
+        }
+      }
+
       const token = data?.session?.access_token;
-
-      // ✅ Si no hay sesión, no hacemos nada
-      if (!token) return;
-
-      // ✅ NO redirigir solo por token: primero valida backend /auth/me
-      try {
-        const me = await apiFetch("/auth/me", { tokenOverride: token });
-        if (!alive) return;
-
-        // ✅ Si backend confirma, ahora sí entra
+      if (token) {
         const from = location?.state?.from || "/dashboard";
         window.location.replace(from);
-      } catch (e) {
-        // 🔥 Token inválido / sesión corrupta / backend no lo acepta -> cortar loop
-        try {
-          await supabase.auth.signOut();
-        } catch (_) {}
-
-        // opcional: limpia mensaje si quieres
-        // setKind("error");
-        // setMsg("Tu sesión expiró. Inicia sesión de nuevo.");
-
-        // Quédate en /login
+      }
+    } catch (e) {
+      // ✅ fallback por si viene como excepción
+      const msg = String(e?.message || "").toLowerCase();
+      if (msg.includes("refresh token") || msg.includes("invalid")) {
+        try { await supabase.auth.signOut(); } catch (_) {}
         return;
       }
-    } catch (_) {}
+    }
   }
 
   boot();
-  return () => {
-    alive = false;
-  };
+  return () => { alive = false; };
 }, [location?.state?.from]);
+
 
 
   // ✅ helper: si NO quiere mantener sesión, cerramos al cerrar pestaña / recargar

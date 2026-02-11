@@ -10,12 +10,23 @@ const app = express();
 
 app.use(express.json({ limit: "2mb" }));
 
+const allowlist = [
+  process.env.WEB_ORIGIN,        // e.g. https://ikaristech.com
+  "http://localhost:3000",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: process.env.WEB_ORIGIN || "http://localhost:3000",
+    origin: (origin, cb) => {
+      // requests same-origin a veces vienen sin origin
+      if (!origin) return cb(null, true);
+      if (allowlist.includes(origin)) return cb(null, true);
+      return cb(new Error(`CORS blocked: ${origin}`));
+    },
     credentials: true,
   })
 );
+
 
 app.get("/api/health", (_req, res) => res.json({ ok: true }));
 
