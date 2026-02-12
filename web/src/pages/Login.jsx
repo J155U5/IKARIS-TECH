@@ -7,7 +7,9 @@ import { apiFetch } from "../api";
 import AuthLayout from "./AuthLayout";
 import "./auth.css";
 import ikarisLogo from "../assets/IKARIS_ST.png";
+import saasImg from "../assets/SAAS.png";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+
 
 
 export default function Login() {
@@ -221,13 +223,26 @@ useEffect(() => {
   }
 
 return (
-  <AuthLayout
-    brandLogo={ikarisLogo}
-    title="Inicia sesión"
-    subtitle="Accede a tu empresa y continua tu operación."
-    sideTitle="IKARIS: ERP ligero, modular"
-    sideText="Diseñado para empresas que necesitan control real: formularios, aprobaciones y trazabilidad."
-  >
+<AuthLayout
+  brandLogo={ikarisLogo}
+  title="Inicia sesión"
+  subtitle="Accede a tu empresa y continua tu operación."
+  sideImage={saasImg}
+  sideTitle="Comienza tu prueba gratuita"
+sideText="Todo en un solo lugar para llevar tu empresa."
+sidePoints={[
+  { k: "cloud",   text: "Listo para usar (no instalas nada)" },
+  { k: "forms",   text: "Formularios y evidencia (fotos/archivos)" },
+  { k: "flow",    text: "Aprobaciones por área (como un flujo)" },
+  { k: "shield",  text: "Permisos por usuario (quién puede qué)" },
+  { k: "offline", text: "Funciona sin internet y luego sincroniza" },
+  { k: "reports", text: "Reportes claros y seguimiento de cambios" },
+]}
+
+
+
+>
+
 
       {msg ? <div className={`alert ${kind}`}>{msg}</div> : null}
 

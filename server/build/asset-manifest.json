@@ -1,17 +1,18 @@
 {
   "files": {
-    "main.css": "/static/css/main.0152b5ff.css",
-    "main.js": "/static/js/main.997bf6c6.js",
+    "main.css": "/static/css/main.92f45be7.css",
+    "main.js": "/static/js/main.c5720021.js",
     "static/js/453.9d77d8c1.chunk.js": "/static/js/453.9d77d8c1.chunk.js",
+    "static/media/SAAS.png": "/static/media/SAAS.3a105ebc0f20be3982d5.png",
     "static/media/IKARIS_ST.png": "/static/media/IKARIS_ST.c7c8aa32da2150aa0512.png",
     "static/media/ikaris-tech.png": "/static/media/ikaris-tech.3ad31d4fe8b8829a5fe1.png",
     "index.html": "/index.html",
-    "main.0152b5ff.css.map": "/static/css/main.0152b5ff.css.map",
-    "main.997bf6c6.js.map": "/static/js/main.997bf6c6.js.map",
+    "main.92f45be7.css.map": "/static/css/main.92f45be7.css.map",
+    "main.c5720021.js.map": "/static/js/main.c5720021.js.map",
     "453.9d77d8c1.chunk.js.map": "/static/js/453.9d77d8c1.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.0152b5ff.css",
-    "static/js/main.997bf6c6.js"
+    "static/css/main.92f45be7.css",
+    "static/js/main.c5720021.js"
   ]
 }

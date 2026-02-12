@@ -35,11 +35,29 @@ app.use("/api/auth", authRoutes);
 app.use("/api/forms", formsRoutes);
 app.use("/api/lookups", lookupsRoutes); // ✅ AÑADIDO
 
+// ✅ NUEVO: SIEMPRE responder JSON en errores de /api (evita HTML <title>Error</title>)
+app.use((err, req, res, next) => {
+  console.error("API ERROR:", err);
+
+  // Si es request a API, responde JSON
+  if (req.path.startsWith("/api")) {
+    const status = err.status || err.statusCode || 500;
+    return res.status(status).json({
+      message: err.message || "Internal Server Error",
+      status,
+      // opcional: si quieres más detalle mientras desarrollas
+      details: err.details || err.error || null,
+    });
+  }
+
+  // Si NO es API, deja que Express maneje lo demás
+  return next(err);
+});
+
 // ✅ SERVIR FRONTEND (React build)
-// index.js está en: /server/src/index.js
-// build está en: /server/build
 const buildPath = path.join(__dirname, "../build");
 app.use(express.static(buildPath));
+
 
 
 // ✅ Fallback SPA: cualquier ruta que NO sea /api -> index.html

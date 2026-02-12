@@ -102,14 +102,16 @@ export default function CompleteOnboarding() {
 await apiFetch("/auth/register-company", {
   method: "POST",
   body: JSON.stringify({
-    representative_name: form.representative_name,
-    company_name: form.company_name,
-    country: form.country,
+    representative_name: form.representative_name?.trim(),
+    company_name: form.company_name?.trim(),
+    company_slug, // ✅ NUEVO: evita slug null en DB
+    country: form.country?.trim(),
     sector: form.sector,
     organization_type: form.organization_type,
-    marketing_opt_in: form.marketing_opt_in,
+    marketing_opt_in: !!form.marketing_opt_in,
   }),
 });
+
 
 
       // ✅ Ya quedó creada: limpiamos pendiente

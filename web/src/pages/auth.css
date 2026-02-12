@@ -60,14 +60,17 @@ body{
 }
 
 .auth-right{
-  padding:34px;
+  padding: 22px 34px 26px;
   background: radial-gradient(800px 500px at 20% 10%, rgba(124,58,237,.35), transparent 60%),
               radial-gradient(700px 500px at 90% 20%, rgba(34,211,238,.25), transparent 60%),
               rgba(0,0,0,.25);
   border-left:1px solid var(--border);
   display:flex;
-  align-items:flex-end;
+
+  /* ✅ antes estaba flex-end (empujaba todo abajo) */
+  align-items:flex-start;
 }
+
 
 .auth-right-inner{
   width:100%;
@@ -971,3 +974,116 @@ body{
 }
 .auth-title{ color: rgba(234,240,255,.95); }
 .auth-subtitle{ color: rgba(234,240,255,.72); }
+/* =========================
+   Right panel (Twilio-like)
+   Imagen + texto centrado SIN contorno
+========================= */
+
+.auth-side{
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  text-align: center;
+
+  /* ✅ la subimos visualmente */
+  padding: 6px 6px 8px;
+}
+
+.auth-side-img{
+  width: min(340px, 95%);
+  height: auto;
+  display: block;
+
+  /* ✅ separa más el texto de la imagen */
+  margin: 6px auto 34px;
+
+  object-fit: contain;
+  filter: drop-shadow(0 14px 34px rgba(0,0,0,.40));
+}
+
+
+
+.auth-side-title{
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: .2px;
+}
+
+.auth-side-text{
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: rgba(234,240,255,.72);
+}
+
+
+.auth-side-point{
+  width: 100%;
+  max-width: 320px;
+  display: grid;
+  grid-template-columns: 18px 1fr;
+  gap: 10px;
+  align-items: start;
+  text-align: left;
+  font-weight: 800;
+  font-size: 13px;
+  color: rgba(234,240,255,.92);
+}
+
+
+/* =========================
+   Bullet icons (white, no container)
+========================= */
+
+.auth-side-title{
+  font-size: 22px;
+  font-weight: 900;
+  letter-spacing: .2px;
+  margin-top: 2px;
+}
+
+.auth-side-text{
+  margin-top: 12px;          /* ✅ más aire */
+  font-size: 14px;
+  line-height: 1.65;         /* ✅ más respiración */
+  color: rgba(234,240,255,.74);
+}
+
+/* ✅ lista con mejor espaciado */
+.auth-side-points{
+  margin-top: 40px;          /* ✅ baja la lista un poco */
+  display: grid;
+  gap: 16px;                 /* ✅ separa cada bullet */
+  justify-items: center;
+}
+
+/* ✅ cada item con más “alto” */
+.auth-side-point{
+  width: 100%;
+  max-width: 380px;          /* ✅ aprovecha mejor el panel */
+  display: grid;
+  grid-template-columns: 20px 1fr;
+  gap: 14px;
+  align-items: start;
+  text-align: left;
+  font-weight: 900;
+  font-size: 13.6px;         /* ✅ un poquito más legible */
+  line-height: 2;         /* ✅ evita que se sienta pegado */
+  color: rgba(234,240,255,.92);
+}
+
+/* ✅ icono blanco sin contenedor */
+.auth-side-ic{
+  width: 20px;
+  height: 20px;
+  display: grid;
+  place-items: center;
+  margin-top: 1px;
+}
+
+.auth-side-ic svg{
+  width: 20px;
+  height: 20px;
+  opacity: .96;
+  color: rgba(255,255,255,.92);
+}
