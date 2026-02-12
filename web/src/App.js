@@ -6,7 +6,9 @@ import {
   Route,
   Navigate,
   useLocation,
+  useNavigate,
 } from "react-router-dom";
+
 
 import Login from "./pages/Login";
 import Register from "./pages/Register";
@@ -15,6 +17,7 @@ import CompleteOnboarding from "./pages/CompleteOnboarding";
 
 import Dashboard from "./pages/Dashboard/Dashboard";
 import { supabase } from "./supabaseClient";
+import { apiFetch } from "./api";
 
 // ✅ Forms
 import FormsList from "./pages/Forms/FormsList";
@@ -54,9 +57,12 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// ✅ Route guard: si no hay sesión => /login
+// ✅ Route guard DURO:
+// 1) debe existir sesión Supabase
+// 2) debe existir perfil en tu DB (/auth/me)
+// si borraste DB pero sigue sesión, aquí lo detecta y lo saca
 function ProtectedRoute({ children }) {
-  const [ok, setOk] = useState(null); // null=loading, false=no session, true=session
+  const [ok, setOk] = useState(null); // null=loading, false=no, true=ok
   const location = useLocation();
 
   useEffect(() => {
@@ -64,10 +70,32 @@ function ProtectedRoute({ children }) {
 
     async function check() {
       try {
+        // 1) sesión supabase
         const { data } = await supabase.auth.getSession();
-        const has = !!data?.session?.access_token;
-        if (!alive) return;
-        setOk(has);
+        const session = data?.session;
+        const token = session?.access_token;
+
+        if (!token) {
+          if (!alive) return;
+          setOk(false);
+          return;
+        }
+
+        // 2) validar perfil en DB con /auth/me
+        try {
+          await apiFetch("/auth/me", { tokenOverride: token });
+          if (!alive) return;
+          setOk(true);
+          return;
+        } catch (e) {
+          // Si no existe perfil (borraste DB) => cerrar sesión y mandar a login
+          try {
+            await supabase.auth.signOut();
+          } catch (_) {}
+          if (!alive) return;
+          setOk(false);
+          return;
+        }
       } catch (_) {
         if (!alive) return;
         setOk(false);
@@ -80,7 +108,14 @@ function ProtectedRoute({ children }) {
     };
   }, []);
 
-  if (ok === null) return null;
+  if (ok === null) {
+    // loading simple para evitar “pantalla en blanco”
+    return (
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
+        <div style={{ opacity: 0.85 }}>Cargando…</div>
+      </div>
+    );
+  }
 
   if (!ok) {
     const from = `${location.pathname}${location.search || ""}`;
@@ -90,37 +125,52 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+
 // ✅ PublicOnly: si ya hay sesión, no mostrar login/register
 function PublicOnly({ children }) {
   const [ok, setOk] = useState(null);
   const location = useLocation();
+  const navigate = useNavigate(); // ✅ AQUI SE CREA
 
   useEffect(() => {
     let alive = true;
 
     async function check() {
-      const { data } = await supabase.auth.getSession();
-      const has = !!data?.session?.access_token;
-      if (!alive) return;
+      try {
+        const { data } = await supabase.auth.getSession();
+        const has = !!data?.session?.access_token;
+        if (!alive) return;
 
-      if (has) {
-        const from = location?.state?.from || "/dashboard";
-        window.location.replace(from);
-        return;
+        if (has) {
+          const from = location?.state?.from || "/dashboard";
+          navigate(from, { replace: true }); // ✅ YA FUNCIONA
+          return;
+        }
+
+        setOk(true);
+      } catch (_) {
+        if (!alive) return;
+        setOk(true); // si falla el check, dejamos entrar a login/register
       }
-
-      setOk(true);
     }
 
     check();
     return () => {
       alive = false;
     };
-  }, [location?.state?.from]);
+  }, [location?.state?.from, navigate]);
 
-  if (ok === null) return null;
+  if (ok === null) {
+    return (
+      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
+        <div style={{ opacity: 0.85 }}>Cargando…</div>
+      </div>
+    );
+  }
+
   return children;
 }
+
 
 export default function App() {
   return (
