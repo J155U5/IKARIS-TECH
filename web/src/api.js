@@ -1,5 +1,6 @@
 // web/src/api.js
 import { supabase } from "./supabaseClient";
+import { globalLoading } from "./loading/globalLoading";
 
 // ✅ Base URL inteligente:
 // - En local puedes usar REACT_APP_API_URL=http://localhost:4000/api
@@ -18,6 +19,10 @@ const API_URL =
 
 
 export async function apiFetch(path, opts = {}) {
+  // ✅ Loader global automático (se puede desactivar por request)
+  const skipLoading = !!opts.skipLoading;
+  if (!skipLoading) globalLoading.start();
+
   // ✅ NUEVO: si skipAuth = true, NO intentamos poner Authorization
   const skipAuth = !!opts.skipAuth;
 
@@ -66,7 +71,12 @@ export async function apiFetch(path, opts = {}) {
 
   try {
     // ✅ IMPORTANTÍSIMO: quitar props custom antes de pasarlas a fetch
-    const { tokenOverride, skipAuth: _skipAuth, ...fetchOpts } = opts;
+    const {
+      tokenOverride,
+      skipAuth: _skipAuth,
+      skipLoading: _skipLoading,
+      ...fetchOpts
+    } = opts;
 
     const res = await fetch(`${API_URL}${path}`, {
       ...fetchOpts,
@@ -110,5 +120,7 @@ export async function apiFetch(path, opts = {}) {
     throw e;
   } finally {
     clearTimeout(t);
+    if (!skipLoading) globalLoading.stop();
   }
 }
+

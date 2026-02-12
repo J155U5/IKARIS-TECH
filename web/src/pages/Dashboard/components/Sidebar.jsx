@@ -6,7 +6,6 @@ import {
   FiUsers,
   FiFolder,
   FiSettings,
-  FiMenu,
   FiBox,
   FiShoppingCart,
   FiDollarSign,
@@ -18,44 +17,43 @@ import {
 
 
 
-function Item({ icon, label, active, collapsed, onClick, disabled, badge }) {
+
+function Item({ icon, label, active, onClick, disabled, badge }) {
   return (
     <button
       className={`ik-sideitem ${active ? "active" : ""} ${disabled ? "disabled" : ""}`}
       onClick={disabled ? undefined : onClick}
-      title={collapsed ? label : undefined}
+      title={label}
       aria-disabled={disabled ? "true" : "false"}
     >
       <span className="ik-sideitem__icon">{icon}</span>
-      {!collapsed ? (
-        <>
-          <span className="ik-sideitem__label">{label}</span>
-          {badge ? <span className="ik-sidebadge">{badge}</span> : null}
-        </>
-      ) : null}
+
+      {/* ✅ siempre existe, CSS lo oculta en collapsed */}
+      <span className="ik-sideitem__label">{label}</span>
+      {badge ? <span className="ik-sidebadge">{badge}</span> : null}
     </button>
   );
 }
 
-function Section({ title, collapsed, children }) {
+
+function Section({ title, children }) {
   return (
     <div className="ik-sidesection">
-      {!collapsed ? <div className="ik-sidesection__title">{title}</div> : null}
+      <div className="ik-sidesection__title">{title}</div>
       <div className="ik-sidesection__items">{children}</div>
     </div>
   );
 }
 
-export default function Sidebar({ ctx, collapsed, onToggle }) {
+
+export default function Sidebar({ ctx }) {
   const role = String(ctx?.role || "POLITES").toUpperCase();
   const plan = String(ctx?.company?.plan || "free").toLowerCase();
 
   const isAdmin = role === "ARCHON" || role === "EPISTATES";
-
-  // 🚦 gating base (luego lo hacemos fino)
   const canUsers = isAdmin;
   const canSettings = isAdmin;
-  const canFinance = role === "ARCHON"; // contabilidad/tesorería solo ARCHON por ahora
+  const canFinance = role === "ARCHON";
 
   const modules = useMemo(() => {
     return [
@@ -78,129 +76,68 @@ export default function Sidebar({ ctx, collapsed, onToggle }) {
       {
         title: "Finanzas",
         items: [
-          {
-            key: "treasury",
-            label: "Tesorería",
-            icon: <FiDollarSign />,
-            path: "/treasury",
-            soon: true,
-            disabled: !canFinance,
-            badge: !canFinance ? "ARCHON" : null,
-          },
-          {
-            key: "accounting",
-            label: "Contabilidad",
-            icon: <FiBarChart2 />,
-            path: "/accounting",
-            soon: true,
-            disabled: !canFinance,
-            badge: !canFinance ? "ARCHON" : null,
-          },
+          { key: "treasury", label: "Tesorería", icon: <FiDollarSign />, path: "/treasury", soon: true, disabled: !canFinance, badge: !canFinance ? "ARCHON" : null },
+          { key: "accounting", label: "Contabilidad", icon: <FiBarChart2 />, path: "/accounting", soon: true, disabled: !canFinance, badge: !canFinance ? "ARCHON" : null },
         ],
       },
       {
         title: "Administración",
         items: [
-          {
-            key: "users",
-            label: "Users",
-            icon: <FiUsers />,
-            path: "/users",
-            soon: true,
-            disabled: !canUsers,
-            badge: !canUsers ? "ADMIN" : null,
-          },
-          {
-            key: "security",
-            label: "Seguridad",
-            icon: <FiShield />,
-            path: "/security",
-            soon: true,
-            disabled: !canSettings,
-            badge: !canSettings ? "ADMIN" : null,
-          },
-          {
-            key: "settings",
-            label: "Settings",
-            icon: <FiSettings />,
-            path: "/settings",
-            soon: true,
-            disabled: !canSettings,
-            badge: !canSettings ? "ADMIN" : null,
-          },
+          { key: "users", label: "Users", icon: <FiUsers />, path: "/users", soon: true, disabled: !canUsers, badge: !canUsers ? "ADMIN" : null },
+          { key: "security", label: "Seguridad", icon: <FiShield />, path: "/security", soon: true, disabled: !canSettings, badge: !canSettings ? "ADMIN" : null },
+          { key: "settings", label: "Settings", icon: <FiSettings />, path: "/settings", soon: true, disabled: !canSettings, badge: !canSettings ? "ADMIN" : null },
         ],
       },
     ];
   }, [canFinance, canSettings, canUsers]);
 
   const location = useLocation();
+  const activePath = location.pathname;
 
   function go(path, soon) {
     if (soon) {
-      // eslint-disable-next-line no-alert
       alert(`Módulo en camino: ${path}`);
       return;
     }
-
-    // ✅ SPA navigation (sin recargar)
     if (typeof ctx?.go === "function") {
       ctx.go(path);
       return;
     }
-
-    // fallback (por si algo raro pasa)
     window.location.assign(path);
   }
 
-  // ✅ active real basado en la URL
-  const activePath = location.pathname;
-
-
   return (
-    <aside className={`ik-sidebar ${collapsed ? "collapsed" : ""}`}>
+    <aside className="ik-sidebar ik-sidebar--hover">
       <div className="ik-sidebar__top">
-        <div className="ik-sidebar__title">{collapsed ? " " : "Módulos"}</div>
-
-<button className="ik-iconbtn" onClick={onToggle} title={collapsed ? "Abrir menú" : "Cerrar menú"}>
-  <FiMenu />
-</button>
-
+        <div className="ik-sidebar__title" >Módulos</div>
       </div>
 
       <div className="ik-sidebar__items">
         {modules.map((sec) => (
-          <Section key={sec.title} title={sec.title} collapsed={collapsed}>
+          <Section key={sec.title} title={sec.title}>
             {sec.items.map((m) => (
               <Item
                 key={m.key}
                 icon={m.icon}
                 label={m.label}
-                collapsed={collapsed}
                 active={activePath === m.path || activePath.startsWith(m.path + "/")}
                 disabled={!!m.disabled}
                 badge={m.badge || (m.soon ? "SOON" : null)}
                 onClick={() => go(m.path, m.soon)}
               />
-
             ))}
-            {!collapsed ? <div className="ik-sep" /> : null}
+            <div className="ik-sep" />
           </Section>
         ))}
       </div>
 
       <div className="ik-sidebar__bottom">
-        {!collapsed ? (
-          <div className="ik-sidebar__foot">
-            <div className="ik-foot__k">IKARIS</div>
-            <div className="ik-foot__v">
-              Plan: <b>{String(plan).toUpperCase()}</b> · Rol: <b>{role}</b>
-            </div>
+        <div className="ik-sidebar__foot">
+          <div className="ik-foot__k">IKARIS</div>
+          <div className="ik-foot__v">
+            Plan: <b>{String(plan).toUpperCase()}</b> · Rol: <b>{role}</b>
           </div>
-        ) : (
-          <div className="ik-sidebar__foot ik-sidebar__foot--mini">
-            <FiSliders />
-          </div>
-        )}
+        </div>
       </div>
     </aside>
   );

@@ -2,7 +2,6 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
   FiBell,
   FiSearch,
-  FiChevronDown,
   FiLogOut,
   FiGrid,
   FiUsers,
@@ -15,8 +14,11 @@ import {
   FiBriefcase,
   FiMoon,
   FiSun,
+  FiMessageCircle,
+  FiStar,
 } from "react-icons/fi";
 
+import Swal from "sweetalert2";
 
 import ikarisLogo from "../../../assets/ikaris-tech.png";
 import { supabase } from "../../../supabaseClient";
@@ -42,87 +44,93 @@ export default function Topbar({ ctx, theme, onToggleTheme }) {
     const [q, setQ] = useState("");
     const [open, setOpen] = useState(false);
 
-    // perfil “editable” (por ahora localStorage; luego lo conectamos a company_users)
-    const LS_PHONE = "ik_profile_phone";
-    const LS_AVATAR = "ik_profile_avatar";
+// ✅ Multi-tenant real: NUNCA guardes avatar/phone en localStorage global.
+// Todo debe venir de DB por (auth_user_id + company_id).
+const email = ctx?.me?.user?.email || "";
+const company = ctx?.company?.name || "IKARIS";
+const role = String(ctx?.role || "POLITES").toUpperCase();
+const plan = String(ctx?.company?.plan || "free").toUpperCase();
 
-    const email = ctx?.me?.user?.email || "";
-    const company = ctx?.company?.name || "IKARIS";
-    const role = String(ctx?.role || "POLITES").toUpperCase();
-    const plan = String(ctx?.company?.plan || "free").toUpperCase();
+const userName =
+  ctx?.me?.user?.name ||
+  ctx?.me?.profile?.name ||
+  ctx?.me?.company_user?.username ||
+  (email ? email.split("@")[0] : "Usuario");
 
-    // intenta agarrar “nombre” del payload; si no existe, usa el correo como fallback
-    const userName =
-      ctx?.me?.user?.name ||
-      ctx?.me?.profile?.name ||
-      ctx?.me?.company_user?.username ||
-      (email ? email.split("@")[0] : "Usuario");
 const representative =
   ctx?.company?.representative_name ||
   ctx?.me?.company_user?.username ||
   userName;
 
-    // ✅ Ya no mostramos "Tipo de empresa" en el menú
+const initials = useMemo(() => initialsFromEmail(email), [email]);
+
+const [phone, setPhone] = useState("");
+const [phoneEditing, setPhoneEditing] = useState(false);
+const [phoneSaving, setPhoneSaving] = useState(false);
+
+// ✅ cooldown UI (72h)
+const COOLDOWN_MS = 72 * 60 * 60 * 1000;
+const [phoneUpdatedAt, setPhoneUpdatedAt] = useState(null); // timestamptz string | null
+const [nowTick, setNowTick] = useState(Date.now()); // para refrescar contador
 
 
-    const initials = useMemo(() => initialsFromEmail(email), [email]);
+// ✅ Avatar viene de DB: company_users.avatar_url (por empresa/cuenta)
+const [avatarUrl, setAvatarUrl] = useState("");
 
-    const [phone, setPhone] = useState("");
-    const [phoneEditing, setPhoneEditing] = useState(false);
-    const [phoneSaving, setPhoneSaving] = useState(false);
+// ✅ Placeholder tipo “sin foto” (similar a tu img 3, sin fondo real)
+const fallbackAvatarSvg = useMemo(() => {
+  const svg = `
+    <svg xmlns="http://www.w3.org/2000/svg" width="96" height="96" viewBox="0 0 96 96">
+      <rect width="96" height="96" rx="22" fill="rgba(255,255,255,0.06)"/>
+      <path d="M48 50c9.2 0 16.6-7.4 16.6-16.6S57.2 16.8 48 16.8 31.4 24.2 31.4 33.4 38.8 50 48 50Z"
+            fill="rgba(255,255,255,0.70)"/>
+      <path d="M18.5 82.5c2.8-15.5 15.4-26.5 29.5-26.5h0c14.1 0 26.7 11 29.5 26.5"
+            fill="rgba(255,255,255,0.35)"/>
+    </svg>
+  `;
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}, []);
 
-    const [avatar, setAvatar] = useState("");
 
 
     const menuRef = useRef(null);
     const fileRef = useRef(null);
 
-    useEffect(() => {
-      let alive = true;
+useEffect(() => {
+  let alive = true;
 
-      async function boot() {
-        // 1) carga rápida local
-        try {
-          const p = localStorage.getItem(LS_PHONE) || "";
-          const a = localStorage.getItem(LS_AVATAR) || "";
-          if (!alive) return;
-          setPhone(onlyDigits10(p));
-          setAvatar(a);
-        } catch (_) {}
+  async function boot() {
+    try {
+      const authUserId =
+        ctx?.me?.user?.id || ctx?.me?.user?.auth_user_id || ctx?.me?.auth_user_id;
+      const companyId = ctx?.company?.id;
+      if (!authUserId || !companyId) return;
 
-        // 2) sync desde Supabase (fuente real)
-        try {
-          const authUserId = ctx?.me?.user?.id || ctx?.me?.user?.auth_user_id || ctx?.me?.auth_user_id;
-          const companyId = ctx?.company?.id;
-          if (!authUserId || !companyId) return;
+      const { data, error } = await supabase
+        .from("company_users")
+        .select("phone, avatar_url, phone_updated_at")
+        .eq("auth_user_id", authUserId)
+        .eq("company_id", companyId)
+        .maybeSingle();
 
-          const { data, error } = await supabase
-            .from("company_users")
-            .select("phone")
-            .eq("auth_user_id", authUserId)
-            .eq("company_id", companyId)
-            .maybeSingle();
+      if (error) return;
 
-          if (error) return;
+      if (!alive) return;
+setPhone(onlyDigits10(data?.phone || ""));
+setAvatarUrl(String(data?.avatar_url || ""));
+setPhoneUpdatedAt(data?.phone_updated_at || null);
 
-          const dbPhone = onlyDigits10(data?.phone || "");
-          if (!alive) return;
-          if (dbPhone) {
-            setPhone(dbPhone);
-            try {
-              localStorage.setItem(LS_PHONE, dbPhone);
-            } catch (_) {}
-          }
-        } catch (e) {
-          console.warn("[Topbar] phone boot sync failed:", e);
-        }
-      }
+    } catch (e) {
+      console.warn("[Topbar] boot sync failed:", e);
+    }
+  }
 
-      boot();
-      return () => {
-        alive = false;
-      };
-    }, [ctx?.me, ctx?.company?.id]);
+  boot();
+  return () => {
+    alive = false;
+  };
+}, [ctx?.me, ctx?.company?.id]);
+
 
 
     function quickNav(path) {
@@ -142,58 +150,217 @@ const representative =
     function onlyDigits10(v) {
       return String(v || "").replace(/\D/g, "").slice(0, 10);
     }
+function formatMxPhone(v) {
+  const d = onlyDigits10(v);
+  if (d.length !== 10) return d;
+  // 668 257 5759
+  return `${d.slice(0,3)} ${d.slice(3,6)} ${d.slice(6)}`;
+}
+useEffect(() => {
+  const t = setInterval(() => setNowTick(Date.now()), 30000);
+  return () => clearInterval(t);
+}, []);
 
-    function savePhoneLocal(v) {
-      const clean = onlyDigits10(v);
-      setPhone(clean);
-      try {
-        localStorage.setItem(LS_PHONE, clean);
-      } catch (_) {}
-      return clean;
+function getPhoneLockInfo(phoneUpdatedAtValue) {
+  if (!phoneUpdatedAtValue) return { locked: false, unlockAt: null, remainingMs: 0 };
+
+  const updatedMs = new Date(phoneUpdatedAtValue).getTime();
+  if (!Number.isFinite(updatedMs)) return { locked: false, unlockAt: null, remainingMs: 0 };
+
+  const unlockAtMs = updatedMs + COOLDOWN_MS;
+  const remainingMs = Math.max(0, unlockAtMs - nowTick);
+
+  return {
+    locked: remainingMs > 0,
+    unlockAt: new Date(unlockAtMs),
+    remainingMs,
+  };
+}
+
+function formatRemaining(ms) {
+  const totalSec = Math.ceil(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  if (h <= 0) return `${m} min`;
+  return `${h}h ${m}m`;
+}
+
+function getPhoneLockInfo(phoneUpdatedAtValue) {
+  if (!phoneUpdatedAtValue) return { locked: false, unlockAt: null, remainingMs: 0 };
+
+  const updatedMs = new Date(phoneUpdatedAtValue).getTime();
+  if (!Number.isFinite(updatedMs)) return { locked: false, unlockAt: null, remainingMs: 0 };
+
+  const unlockAtMs = updatedMs + COOLDOWN_MS;
+  const remainingMs = Math.max(0, unlockAtMs - nowTick);
+
+  return {
+    locked: remainingMs > 0,
+    unlockAt: new Date(unlockAtMs),
+    remainingMs,
+  };
+}
+
+function formatRemaining(ms) {
+  const totalSec = Math.ceil(ms / 1000);
+  const h = Math.floor(totalSec / 3600);
+  const m = Math.floor((totalSec % 3600) / 60);
+  if (h <= 0) return `${m} min`;
+  return `${h}h ${m}m`;
+}
+
+function setPhoneClean(v) {
+  const clean = onlyDigits10(v);
+  setPhone(clean);
+  return clean;
+}
+
+const phoneSaveLock = useRef(false);
+const phoneAbortRef = useRef(null);
+const lastPhoneSaveAt = useRef(0);
+
+async function savePhoneToApi(raw) {
+  const clean = onlyDigits10(raw);
+  if (clean.length !== 10) return { ok: false, reason: "len" };
+
+  // ✅ anti-spam: no más de 1 intento cada 2s
+  const now = Date.now();
+  if (now - lastPhoneSaveAt.current < 2000) {
+    return { ok: false, reason: "cooldown" };
+  }
+
+  // ✅ lock (evita doble click / doble enter / rerenders raros)
+  if (phoneSaveLock.current) {
+    return { ok: false, reason: "locked" };
+  }
+
+  phoneSaveLock.current = true;
+  lastPhoneSaveAt.current = now;
+
+  // ✅ abort request anterior si existía
+  try { phoneAbortRef.current?.abort?.(); } catch {}
+  const controller = new AbortController();
+  phoneAbortRef.current = controller;
+
+  try {
+    const { data: sess } = await supabase.auth.getSession();
+    const token = sess?.session?.access_token;
+
+    const res = await fetch("/api/auth/profile", {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      credentials: "include",
+      signal: controller.signal,
+      body: JSON.stringify({ phone: clean }),
+    });
+
+    const json = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      return { ok: false, reason: "api", status: res.status, data: json };
     }
 
-    async function savePhoneToSupabase(raw) {
-      const clean = onlyDigits10(raw);
+    setPhone(clean);
+    return { ok: true };
+  } catch (e) {
+    if (e?.name === "AbortError") return { ok: false, reason: "aborted" };
+    return { ok: false, reason: "net", error: e };
+  } finally {
+    phoneSaveLock.current = false;
+  }
+}
 
-      // Si no tiene 10 dígitos, no guardamos
-      if (clean.length !== 10) return { ok: false, reason: "len" };
 
-      // OJO: si tu payload ctx.me cambia, ajusta estas rutas:
-      const authUserId = ctx?.me?.user?.id || ctx?.me?.user?.auth_user_id || ctx?.me?.auth_user_id;
-      const companyId = ctx?.company?.id;
 
-      if (!authUserId || !companyId) return { ok: false, reason: "missing_ids" };
+async function onPickAvatar(file) {
+  try {
+    if (!file) return;
 
-      const { error } = await supabase
-        .from("company_users")
-        .update({ phone: clean })
-        .eq("auth_user_id", authUserId)
-        .eq("company_id", companyId);
-
-      if (error) {
-        console.error("[Topbar] phone update error:", error);
-        return { ok: false, reason: "db", error };
-      }
-
-      // ✅ Mantén tu UI sincronizada (menu + topbar)
-      savePhoneLocal(clean);
-      return { ok: true };
+    // ✅ validaciones básicas (FB-like)
+    const maxMb = 5;
+    const isImg = /^image\//.test(file.type);
+    if (!isImg) {
+      await Swal.fire({ icon: "error", title: "Archivo no válido", text: "Solo imágenes." });
+      return;
+    }
+    if (file.size > maxMb * 1024 * 1024) {
+      await Swal.fire({ icon: "error", title: "Muy pesada", text: `Máximo ${maxMb}MB.` });
+      return;
     }
 
+    const authUserId =
+      ctx?.me?.user?.id || ctx?.me?.user?.auth_user_id || ctx?.me?.auth_user_id;
+    const companyId = ctx?.company?.id;
 
-    async function onPickAvatar(file) {
-      if (!file) return;
-      // para UI rápida: guardamos como dataURL en localStorage (luego lo subimos a Supabase Storage)
-      const reader = new FileReader();
-      reader.onload = () => {
-        const dataUrl = String(reader.result || "");
-        setAvatar(dataUrl);
-        try {
-          localStorage.setItem(LS_AVATAR, dataUrl);
-        } catch (_) {}
-      };
-      reader.readAsDataURL(file);
+    if (!authUserId || !companyId) {
+      await Swal.fire({ icon: "error", title: "Sesión incompleta", text: "No se detectó usuario/empresa." });
+      return;
     }
+
+    // ✅ extensión segura
+    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
+    const safeExt = ["png", "jpg", "jpeg", "webp"].includes(ext) ? ext : "jpg";
+
+    // ✅ path por usuario (evita colisiones, y es compatible con policy)
+    const objectPath = `${authUserId}/avatar.${safeExt}`;
+
+    // ✅ subir con upsert
+    const { error: upErr } = await supabase.storage
+      .from("avatars")
+      .upload(objectPath, file, {
+        upsert: true,
+        contentType: file.type,
+        cacheControl: "3600",
+      });
+
+    if (upErr) {
+      console.warn("[Avatar] upload error:", upErr);
+      await Swal.fire({ icon: "error", title: "No se pudo subir", text: "Revisa permisos de Storage/RLS." });
+      return;
+    }
+
+    // ✅ obtener URL pública
+    const { data: pub } = supabase.storage.from("avatars").getPublicUrl(objectPath);
+    const publicUrl = String(pub?.publicUrl || "");
+
+    if (!publicUrl) {
+      await Swal.fire({ icon: "error", title: "URL inválida", text: "No se pudo generar URL pública." });
+      return;
+    }
+
+    // ✅ guardar en DB (por empresa + usuario)
+    const { error: dbErr } = await supabase
+      .from("company_users")
+      .update({ avatar_url: publicUrl })
+      .eq("auth_user_id", authUserId)
+      .eq("company_id", companyId);
+
+    if (dbErr) {
+      console.warn("[Avatar] db update error:", dbErr);
+      await Swal.fire({ icon: "error", title: "No se pudo guardar", text: "Revisa RLS en company_users." });
+      return;
+    }
+
+    // ✅ refrescar UI (cache-bust simple)
+    const bust = `t=${Date.now()}`;
+    const finalUrl = publicUrl.includes("?") ? `${publicUrl}&${bust}` : `${publicUrl}?${bust}`;
+    setAvatarUrl(finalUrl);
+
+    await Swal.fire({ icon: "success", title: "Foto actualizada", timer: 900, showConfirmButton: false });
+  } catch (e) {
+    console.warn("[Avatar] unexpected:", e);
+    await Swal.fire({ icon: "error", title: "Error", text: "Ocurrió un error inesperado." });
+  } finally {
+    // ✅ permite volver a elegir el mismo archivo
+    try {
+      if (fileRef?.current) fileRef.current.value = "";
+    } catch {}
+  }
+}
+
 
     // cerrar al click afuera
     useEffect(() => {
@@ -207,8 +374,14 @@ const representative =
       return () => document.removeEventListener("mousedown", onDoc);
     }, [open]);
 
-    return (
-      <header className="ik-topbar">
+    
+
+const phoneLock = getPhoneLockInfo(phoneUpdatedAt);
+const phoneLocked = phoneLock.locked;
+
+return (
+  <header className="ik-topbar">
+
         <div className="ik-topbar__left">
 
 
@@ -251,35 +424,55 @@ const representative =
           </form>
         </div>
 
-        <div className="ik-topbar__right">
-          <button className="ik-iconbtn" title="Notificaciones">
-            <FiBell />
-            <span className="ik-dot" />
-          </button>
+<div className="ik-topbar__right">
+  {/* 🔔 Notificaciones */}
+  <button className="ik-iconbtn" title="Notificaciones">
+    <FiBell />
+    <span className="ik-dot" />
+  </button>
 
-          <div className="ik-profile" ref={menuRef}>
-            <button className="ik-profile__btn" onClick={() => setOpen((v) => !v)} aria-expanded={open ? "true" : "false"}>
-              <div className="ik-avatar">
-                {avatar ? <img className="ik-avatar__img" src={avatar} alt="avatar" /> : initials}
-              </div>
+  {/* 💬 Chats */}
+  <button
+    className="ik-iconbtn"
+    title="Chats"
+    onClick={() => quickNav("/chats")}
+  >
+    <FiMessageCircle />
+  </button>
 
-  <div className="ik-profile__meta">
-<div className="ik-profile__name">{representative}</div>
-<div className="ik-profile__sub">{company}</div>
+  {/* 👤 Perfil (mantiene el menú desplegable) */}
+  <div className="ik-profile" ref={menuRef}>
+    <button
+      className="ik-profileIcon"
+      onClick={() => setOpen((v) => !v)}
+      aria-expanded={open ? "true" : "false"}
+      title="Perfil"
+      type="button"
+    >
+      <div className="ik-avatar">
+        <img
+          className="ik-avatar__img"
+          src={avatarUrl || fallbackAvatarSvg}
+          alt="avatar"
+          onError={(e) => (e.currentTarget.src = fallbackAvatarSvg)}
+        />
+      </div>
+    </button>
 
-  </div>
+    {/* ✅ Renderizamos siempre para permitir animación CSS */}
 
 
-
-              <FiChevronDown />
-            </button>
-
-            {/* ✅ Renderizamos siempre para permitir animación CSS */}
             <div className={`ik-menu ik-menu--profile ${open ? "open" : ""}`}>
               <div className="ik-menu__card">
                 <div className="ik-menu__hero">
                   <div className="ik-menu__avatarBig">
-                    {avatar ? <img className="ik-avatarBig__img" src={avatar} alt="avatar" /> : initials}
+                    <img
+  className="ik-avatarBig__img"
+  src={avatarUrl || fallbackAvatarSvg}
+  alt="avatar"
+  onError={(e) => (e.currentTarget.src = fallbackAvatarSvg)}
+/>
+
                     <button
                       className="ik-avatarBig__cam"
                       type="button"
@@ -298,15 +491,18 @@ const representative =
                   </div>
 
                   <div className="ik-menu__who">
-<div className="ik-menu__name">{representative}</div>
-<div className="ik-menu__sub">{company}</div>
+                <div className="ik-menu__name">{representative}</div>
+                <div className="ik-menu__sub">{company}</div>
 
                   </div>
                 </div>
 
                 <div className="ik-menu__rows">
-                  {/* ✅ Theme toggle (Light / Dark) */}
-<div className="ik-row ik-row--toggle" role="button" tabIndex={0} onClick={onToggleTheme}
+<div
+  className="ik-themeRow"
+  role="button"
+  tabIndex={0}
+  onClick={onToggleTheme}
   onKeyDown={(e) => {
     if (e.key === "Enter" || e.key === " ") {
       e.preventDefault();
@@ -315,19 +511,30 @@ const representative =
   }}
   title="Cambiar tema"
 >
-  <span className="ik-row__ic">{theme === "iris" ? <FiMoon /> : <FiSun />}</span>
-  <span className="ik-row__k">Modo</span>
+  <button
+    type="button"
+    className={`ik-themeToggle2 ${theme === "iris" ? "on" : ""}`}
+    onClick={(e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      onToggleTheme();
+    }}
+    aria-label="Cambiar tema"
+  >
+    <span className="ik-themeToggle2__track">
+      <span className="ik-themeToggle2__icon ik-themeToggle2__icon--sun"><FiSun /></span>
+      <span className="ik-themeToggle2__icon ik-themeToggle2__icon--moon"><FiMoon /></span>
 
-  <span className="ik-row__v" style={{ display: "flex", alignItems: "center", gap: 10, justifyContent: "flex-end" }}>
-    <span style={{ opacity: 0.9, fontWeight: 900 }}>
-      {theme === "iris" ? "Dark" : "Light"}
+      <span className="ik-themeToggle2__knob">
+        <span className="ik-themeToggle2__knobIc">
+          {theme === "iris" ? <FiMoon /> : <FiSun />}
+        </span>
+      </span>
     </span>
-
-    <span className={`ik-switch ${theme === "iris" ? "on" : ""}`} aria-hidden="true">
-      <span className="ik-switch__knob" />
-    </span>
-  </span>
+  </button>
 </div>
+
+
 
                   <div className="ik-row">
                     <span className="ik-row__ic"><FiMail /></span>
@@ -342,73 +549,103 @@ const representative =
                   </div>
 
 
+<div className="ik-row">
+  <span className="ik-row__ic"><FiPhone /></span>
+  <span className="ik-row__k">Teléfono</span>
 
-                  <div className="ik-row">
-                    <span className="ik-row__ic"><FiPhone /></span>
-                    <span className="ik-row__k">Teléfono</span>
+  <div className="ik-row__right">
+    {!phoneEditing ? (
+      <button
+        type="button"
+        className="ik-inlineValueBtn"
 
-                    {!phoneEditing ? (
-                      <button
-                        type="button"
-                        className="ik-row__valueBtn"
-                        onClick={() => setPhoneEditing(true)}
-                        title="Editar teléfono"
-                      >
-                        <span className="ik-row__v">
-                          {phone && phone.length === 10 ? phone : "Agregar…"}
-                        </span>
-                      </button>
-                    ) : (
-                      <input
-                        autoFocus
-                        className="ik-row__input"
-                        inputMode="numeric"
-                        value={phone}
-                        onChange={(e) => savePhoneLocal(e.target.value)}
-                        onKeyDown={async (e) => {
-                          // bloquear teclas raras (pero permitir control/shortcuts)
-                          if (!e.ctrlKey && !e.metaKey) {
-                            const allowed = ["Backspace", "Delete", "ArrowLeft", "ArrowRight", "Tab", "Home", "End", "Enter", "Escape"];
-                            const isDigit = /^[0-9]$/.test(e.key);
-                            if (!isDigit && !allowed.includes(e.key)) {
-                              e.preventDefault();
-                            }
-                          }
+        onClick={() => {
+          if (phoneLocked) return;
+          setPhoneEditing(true);
+        }}
+        disabled={phoneLocked}
+        style={phoneLocked ? { opacity: 0.55, cursor: "not-allowed" } : undefined}
+      >
+        <span className={`ik-inlineValue ${phone?.length === 10 ? "ok" : ""}`}>
+          {phone?.length === 10 ? formatMxPhone(phone) : "Agregar número de teléfono"}
+        </span>
 
-                          if (e.key === "Escape") {
-                            e.preventDefault();
-                            setPhoneEditing(false);
-                            return;
-                          }
+       
+      </button>
+    ) : (
+      <input
+        autoFocus
+        className="ik-lineInput"
+        inputMode="numeric"
+        value={phone}
+        onChange={(e) => setPhoneClean(e.target.value)}
+        placeholder="Agregar número de teléfono"
+        aria-label="Teléfono (10 dígitos)"
+        onKeyDown={async (e) => {
+          if (e.key === "Escape") {
+            e.preventDefault();
+            setPhoneEditing(false);
+            return;
+          }
 
-                          if (e.key === "Enter") {
-                            e.preventDefault();
-                            setPhoneSaving(true);
-                            const res = await savePhoneToSupabase(phone);
-                            setPhoneSaving(false);
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (phoneSaving) return;
 
-                            if (res.ok) {
-                              setPhoneEditing(false); // ✅ vuelve a texto normal
-                            } else {
-                              console.warn("Phone not saved:", res.reason);
-                              // se queda en edición para corregir
-                            }
-                          }
-                        }}
-                        placeholder="10 dígitos…"
-                      />
-                    )}
+            // ✅ SweetAlert con Aceptar + Cancelar (obligatorio)
+            const ok = await Swal.fire({
+              icon: "warning",
+              title: "Confirmación",
+              text: "Al agregar o editar tu teléfono, no podrás cambiarlo en un plazo de 3 días (72 hrs).",
+              showConfirmButton: true,
+              showCancelButton: true,
+              confirmButtonText: "Aceptar",
+              cancelButtonText: "Cancelar",
+              focusConfirm: true,
+              allowEnterKey: true,
+              allowEscapeKey: true,
+              allowOutsideClick: true,
+              buttonsStyling: true,
+            }).then((r) => r.isConfirmed);
 
-                    {phoneSaving ? <span className="ik-row__hint">Guardando…</span> : null}
-                  </div>
+            if (!ok) {
+              setPhoneEditing(false);
+              return;
+            }
+
+            setPhoneSaving(true);
+            const res = await savePhoneToApi(phone);
+            setPhoneSaving(false);
+
+            if (res.ok) {
+              setPhoneEditing(false);
+              // ✅ bloquear inmediatamente en UI (72h desde ahora)
+              setPhoneUpdatedAt(new Date().toISOString());
+            } else {
+              console.warn("Phone not saved:", res);
+            }
+          }
+        }}
+        onBlur={() => {
+          setPhoneEditing(false);
+        }}
+      />
+    )}
+  </div>
+</div>
 
 
 
-                  <div className="ik-row">
-                    <span className="ik-row__ic">★</span>
-                    <span className="ik-row__k">Plan</span>
-                    <span className="ik-row__v">{plan}</span>
-                  </div>
+
+
+<div className="ik-row">
+  <span className="ik-row__ic">
+    <FiStar />
+  </span>
+  <span className="ik-row__k">Plan</span>
+  <span className="ik-row__v">{plan}</span>
+</div>
+
                 </div>
 
                 <div className="ik-menu__actions">

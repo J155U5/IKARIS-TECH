@@ -9,7 +9,6 @@ import {
   useNavigate,
 } from "react-router-dom";
 
-
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import AuthCallback from "./pages/AuthCallback";
@@ -19,12 +18,14 @@ import Dashboard from "./pages/Dashboard/Dashboard";
 import { supabase } from "./supabaseClient";
 import { apiFetch } from "./api";
 
+import { LoadingProvider } from "./loading/LoadingProvider";
+import { globalLoading } from "./loading/globalLoading";
+
 // ✅ Forms
 import FormsList from "./pages/Forms/FormsList";
 import FormBuilder from "./pages/Forms/FormBuilder";
 import FormFill from "./pages/Forms/FormFill";
 import FormResponses from "./pages/Forms/FormResponses";
-
 
 // ✅ ErrorBoundary inline
 class ErrorBoundary extends React.Component {
@@ -46,9 +47,7 @@ class ErrorBoundary extends React.Component {
             💥 IKARIS Frontend Error
           </div>
           <pre style={{ whiteSpace: "pre-wrap" }}>
-            {String(
-              this.state.err?.stack || this.state.err?.message || this.state.err
-            )}
+            {String(this.state.err?.stack || this.state.err?.message || this.state.err)}
           </pre>
         </div>
       );
@@ -57,216 +56,191 @@ class ErrorBoundary extends React.Component {
   }
 }
 
-// ✅ Route guard DURO:
-// 1) debe existir sesión Supabase
-// 2) debe existir perfil en tu DB (/auth/me)
-// si borraste DB pero sigue sesión, aquí lo detecta y lo saca
-function ProtectedRoute({ children }) {
-  const [ok, setOk] = useState(null); // null=loading, false=no, true=ok
-  const location = useLocation();
+/**
+ * ✅ Bootstrap único (tipo FB):
+ * - corre 1 vez
+ * - decide si hay sesión + perfil DB
+ * - al terminar: globalLoading.stop() (cierra overlay)
+ */
+function AuthBootstrap({ children }) {
+  const [boot, setBoot] = useState({ ready: false, authed: false });
 
   useEffect(() => {
     let alive = true;
 
-    async function check() {
+    async function run() {
       try {
-        // 1) sesión supabase
         const { data } = await supabase.auth.getSession();
-        const session = data?.session;
-        const token = session?.access_token;
+        const token = data?.session?.access_token;
 
         if (!token) {
           if (!alive) return;
-          setOk(false);
+          setBoot({ ready: true, authed: false });
           return;
         }
 
-        // 2) validar perfil en DB con /auth/me
+        // validar perfil en DB
         try {
           await apiFetch("/auth/me", { tokenOverride: token });
           if (!alive) return;
-          setOk(true);
+          setBoot({ ready: true, authed: true });
           return;
         } catch (e) {
-          // Si no existe perfil (borraste DB) => cerrar sesión y mandar a login
+          // sesión existe pero perfil no => cerrar sesión
           try {
             await supabase.auth.signOut();
           } catch (_) {}
           if (!alive) return;
-          setOk(false);
+          setBoot({ ready: true, authed: false });
           return;
         }
-      } catch (_) {
-        if (!alive) return;
-        setOk(false);
+      } finally {
+        // ✅ cierra el BOOT loader (el que se abrió en index.js)
+        globalLoading.stop();
       }
     }
 
-    check();
+    run();
     return () => {
       alive = false;
     };
   }, []);
 
-  if (ok === null) {
-    // loading simple para evitar “pantalla en blanco”
-    return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
-        <div style={{ opacity: 0.85 }}>Cargando…</div>
-      </div>
-    );
-  }
+  // Durante boot NO renderizamos nada; el overlay global está activo desde index.js
+  if (!boot.ready) return null;
 
-  if (!ok) {
+  return children(boot);
+}
+
+// ✅ ProtectedRoute sync (ya no hace async)
+function ProtectedRoute({ authed, children }) {
+  const location = useLocation();
+  if (!authed) {
     const from = `${location.pathname}${location.search || ""}`;
     return <Navigate to="/login" replace state={{ from }} />;
   }
-
   return children;
 }
 
-
-// ✅ PublicOnly: si ya hay sesión, no mostrar login/register
-function PublicOnly({ children }) {
-  const [ok, setOk] = useState(null);
+// ✅ PublicOnly sync
+function PublicOnly({ authed, children }) {
   const location = useLocation();
-  const navigate = useNavigate(); // ✅ AQUI SE CREA
+  const navigate = useNavigate();
 
   useEffect(() => {
-    let alive = true;
-
-    async function check() {
-      try {
-        const { data } = await supabase.auth.getSession();
-        const has = !!data?.session?.access_token;
-        if (!alive) return;
-
-        if (has) {
-          const from = location?.state?.from || "/dashboard";
-          navigate(from, { replace: true }); // ✅ YA FUNCIONA
-          return;
-        }
-
-        setOk(true);
-      } catch (_) {
-        if (!alive) return;
-        setOk(true); // si falla el check, dejamos entrar a login/register
-      }
+    if (authed) {
+      const from = location?.state?.from || "/dashboard";
+      navigate(from, { replace: true });
     }
+  }, [authed, location?.state?.from, navigate]);
 
-    check();
-    return () => {
-      alive = false;
-    };
-  }, [location?.state?.from, navigate]);
-
-  if (ok === null) {
-    return (
-      <div style={{ minHeight: "100vh", display: "grid", placeItems: "center" }}>
-        <div style={{ opacity: 0.85 }}>Cargando…</div>
-      </div>
-    );
-  }
-
+  if (authed) return null;
   return children;
 }
-
 
 export default function App() {
   return (
     <ErrorBoundary>
-      <Router>
-        <Routes>
-          <Route path="/" element={<Navigate to="/login" replace />} />
+      <LoadingProvider>
+        <Router>
+          {/* ✅ base siempre presente para que el blur se vea premium en light/dark */}
+          <div className="ik-appBase" aria-hidden="true" />
 
-          <Route
-            path="/login"
-            element={
-              <PublicOnly>
-                <Login />
-              </PublicOnly>
-            }
-          />
+          <AuthBootstrap>
+            {(boot) => (
+              <Routes>
+                <Route path="/" element={<Navigate to="/login" replace />} />
 
-          <Route
-            path="/register"
-            element={
-              <PublicOnly>
-                <Register />
-              </PublicOnly>
-            }
-          />
+                <Route
+                  path="/login"
+                  element={
+                    <PublicOnly authed={boot.authed}>
+                      <Login />
+                    </PublicOnly>
+                  }
+                />
 
-          <Route path="/auth/callback" element={<AuthCallback />} />
+                <Route
+                  path="/register"
+                  element={
+                    <PublicOnly authed={boot.authed}>
+                      <Register />
+                    </PublicOnly>
+                  }
+                />
 
-          <Route
-            path="/onboarding"
-            element={
-              <ProtectedRoute>
-                <CompleteOnboarding />
-              </ProtectedRoute>
-            }
-          />
+                <Route path="/auth/callback" element={<AuthCallback />} />
 
-<Route
-  path="/dashboard"
-  element={
-    <ProtectedRoute>
-      <Dashboard />
-    </ProtectedRoute>
-  }
-/>
+                <Route
+                  path="/onboarding"
+                  element={
+                    <ProtectedRoute authed={boot.authed}>
+                      <CompleteOnboarding />
+                    </ProtectedRoute>
+                  }
+                />
 
-{/* ✅ FORMS */}
-<Route
-  path="/forms"
-  element={
-    <ProtectedRoute>
-      <FormsList />
-    </ProtectedRoute>
-  }
-/>
+                <Route
+                  path="/dashboard"
+                  element={
+                    <ProtectedRoute authed={boot.authed}>
+                      <Dashboard />
+                    </ProtectedRoute>
+                  }
+                />
 
-<Route
-  path="/forms/new"
-  element={
-    <ProtectedRoute>
-      <FormBuilder />
-    </ProtectedRoute>
-  }
-/>
+                {/* ✅ FORMS */}
+                <Route
+                  path="/forms"
+                  element={
+                    <ProtectedRoute authed={boot.authed}>
+                      <FormsList />
+                    </ProtectedRoute>
+                  }
+                />
 
-<Route
-  path="/forms/:id/edit"
-  element={
-    <ProtectedRoute>
-      <FormBuilder />
-    </ProtectedRoute>
-  }
-/>
+                <Route
+                  path="/forms/new"
+                  element={
+                    <ProtectedRoute authed={boot.authed}>
+                      <FormBuilder />
+                    </ProtectedRoute>
+                  }
+                />
 
-<Route
-  path="/forms/:id/fill"
-  element={
-    <ProtectedRoute>
-      <FormFill />
-    </ProtectedRoute>
-  }
-/>
+                <Route
+                  path="/forms/:id/edit"
+                  element={
+                    <ProtectedRoute authed={boot.authed}>
+                      <FormBuilder />
+                    </ProtectedRoute>
+                  }
+                />
 
-<Route
-  path="/forms/:id/responses"
-  element={
-    <ProtectedRoute>
-      <FormResponses />
-    </ProtectedRoute>
-  }
-/>
+                <Route
+                  path="/forms/:id/fill"
+                  element={
+                    <ProtectedRoute authed={boot.authed}>
+                      <FormFill />
+                    </ProtectedRoute>
+                  }
+                />
 
-<Route path="*" element={<Navigate to="/login" replace />} />
+                <Route
+                  path="/forms/:id/responses"
+                  element={
+                    <ProtectedRoute authed={boot.authed}>
+                      <FormResponses />
+                    </ProtectedRoute>
+                  }
+                />
 
-        </Routes>
-      </Router>
+                <Route path="*" element={<Navigate to="/login" replace />} />
+              </Routes>
+            )}
+          </AuthBootstrap>
+        </Router>
+      </LoadingProvider>
     </ErrorBoundary>
   );
 }

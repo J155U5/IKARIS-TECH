@@ -412,6 +412,68 @@ try {
 });
 
 
+// ✅ Actualizar perfil (phone / avatar_url) con cooldown de 3 días
+router.patch("/profile", requireAuthUserOnly, async (req, res) => {
+  try {
+    const authUser = req.authUser;
+    const { phone, avatar_url } = req.body || {};
+
+    // 1) buscar membership activo
+    const { data: memberships, error: memErr } = await supabaseAdmin
+      .from("company_users")
+      .select("*")
+      .eq("auth_user_id", authUser.id)
+      .eq("active", true)
+      .limit(1);
+
+    if (memErr) return res.status(500).json({ error: memErr.message });
+    const me = memberships?.[0];
+    if (!me) return res.status(403).json({ error: "No membership" });
+
+    const patch = {};
+
+    // 2) Phone: solo si viene definido (permite mandar "" para limpiar)
+    if (phone !== undefined) {
+      const last = me.phone_updated_at ? new Date(me.phone_updated_at).getTime() : 0;
+      const now = Date.now();
+      const threeDays = 3 * 24 * 60 * 60 * 1000;
+
+      if (last && now - last < threeDays) {
+        const nextAt = new Date(last + threeDays).toISOString();
+        return res.status(429).json({
+          error: "Phone cooldown",
+          message: "Solo puedes actualizar el teléfono cada 3 días.",
+          next_allowed_at: nextAt,
+        });
+      }
+
+      patch.phone = String(phone || "").trim() || null;
+      patch.phone_updated_at = new Date().toISOString();
+    }
+
+    // 3) Avatar url: no necesita cooldown (si quieres, se lo metemos luego)
+    if (avatar_url !== undefined) {
+      patch.avatar_url = String(avatar_url || "").trim() || null;
+    }
+
+    if (!Object.keys(patch).length) {
+      return res.status(400).json({ error: "Nothing to update" });
+    }
+
+    const { data: updated, error: upErr } = await supabaseAdmin
+      .from("company_users")
+      .update(patch)
+      .eq("id", me.id)
+      .select("*")
+      .single();
+
+    if (upErr) return res.status(500).json({ error: upErr.message });
+
+    return res.status(200).json({ ok: true, membership: updated });
+  } catch (e) {
+    return res.status(500).json({ error: String(e) });
+  }
+});
 
 router.post("/logout", (_req, res) => {
   // logout real lo maneja supabase en frontend (supabase.auth.signOut)

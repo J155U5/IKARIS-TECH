@@ -1,13 +1,39 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* web/src/index.css */
+
+html, body, #root {
+  height: 100%;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen",
+    "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* ✅ base por default (dark) */
+  background: radial-gradient(1200px 700px at 20% 10%, rgba(92, 38, 132, 0.35), rgba(0,0,0,0) 55%),
+              radial-gradient(900px 600px at 80% 50%, rgba(0, 120, 140, 0.25), rgba(0,0,0,0) 60%),
+              #07070a;
+}
+
+/* ✅ Light theme base (grisáceo tipo “FB loading”) */
+html[data-theme="light"] body {
+  background: radial-gradient(1100px 600px at 25% 15%, rgba(140, 120, 190, 0.18), rgba(255,255,255,0) 60%),
+              radial-gradient(900px 650px at 80% 50%, rgba(80, 160, 180, 0.12), rgba(255,255,255,0) 65%),
+              #f2f3f5;
+}
+
+/* ✅ Fondo fijo detrás SIEMPRE (para que el blur no “parpadee”) */
+.ik-appBase{
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Tu app normal encima */
+#root{
+  position: relative;
+  z-index: 1;
 }

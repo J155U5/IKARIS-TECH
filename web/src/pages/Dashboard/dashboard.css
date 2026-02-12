@@ -50,22 +50,34 @@
 
 
 /* Shell */
+
 .ik-shell{
   display: grid;
-  grid-template-columns: 280px 1fr;
+
+  /* ✅ SIEMPRE reservar solo la columna mini (iconos) */
+  grid-template-columns: 86px 1fr;
+
   gap: 16px;
   padding: 16px 16px 22px;
 
-  /* ✅ transición tipo ChatGPT */
   transition: grid-template-columns 260ms cubic-bezier(.2,.9,.2,1);
   will-change: grid-template-columns;
 }
 
-/* ✅ cuando colapsa */
+/* ✅ ya no “comprime” nada (lo dejamos por compatibilidad) */
 .ik-shell.is-collapsed{
   grid-template-columns: 86px 1fr;
 }
+/* ✅ Hover sidebar: cuando crece, que sea overlay y NO afecte el layout */
+.ik-sidebar.ik-sidebar--hover{
+  position: sticky;  /* lo mantienes */
+  z-index: 20;       /* por encima del main */
+}
 
+/* ✅ cuando se expande, que no recorte y pueda “salirse” del grid */
+.ik-shell{
+  overflow: visible;
+}
 
 .ik-main{
   height: calc(100vh - 92px);
@@ -89,7 +101,7 @@
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: 1.1fr 1.2fr 0.9fr;
+  grid-template-columns: auto 1fr auto;
   gap: 14px;
   align-items: center;
   padding: 14px 16px;
@@ -291,6 +303,127 @@
   gap: 10px;
 }
 
+.ik-profileIcon:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   ✅ Topbar: Avatar icon-only
+   ========================= */
+.ik-profileIcon{
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: var(--onDark);
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  transition: background .14s ease, border-color .14s ease, transform .14s ease;
+}
+.ik-profileIcon:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
+  transform: translateY(-1px);
+}
+
+/* =========================
+   ✅ Theme toggle (NO reutiliza .ik-switch)
+   - centrado
+   - sol/luna integrados
+   - animación del knob + swap de iconos
+   ========================= */
+.ik-row--theme{
+  grid-template-columns: 28px 84px 1fr;
+}
+
+.ik-themeToggle{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.ik-themeToggle__track{
+  width: 86px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.ik-dashboard.theme-light .ik-themeToggle__track{
+  border: 1px solid rgba(15,23,42,.14);
+  background: rgba(15,23,42,.04);
+}
+
+.ik-themeToggle__sun,
+.ik-themeToggle__moon{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  opacity: .85;
+  transition: opacity 220ms cubic-bezier(.2,.9,.2,1), transform 220ms cubic-bezier(.2,.9,.2,1);
+}
+
+.ik-themeToggle__sun{ left: 8px; }
+.ik-themeToggle__moon{ right: 8px; }
+
+.ik-themeToggle__knob{
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  transition: left 260ms cubic-bezier(.2,.9,.2,1);
+}
+
+/* ON = iris */
+.ik-themeToggle.on .ik-themeToggle__knob{
+  left: calc(100% - 36px);
+}
+.ik-themeToggle.on .ik-themeToggle__sun{
+  opacity: .35;
+  transform: translateY(-50%) scale(.95);
+}
+.ik-themeToggle.on .ik-themeToggle__moon{
+  opacity: 1;
+  transform: translateY(-50%) scale(1.05);
+}
+
+/* OFF = light */
+.ik-themeToggle:not(.on) .ik-themeToggle__sun{
+  opacity: 1;
+  transform: translateY(-50%) scale(1.05);
+}
+.ik-themeToggle:not(.on) .ik-themeToggle__moon{
+  opacity: .35;
+  transform: translateY(-50%) scale(.95);
+}
+
 .ik-profile{ position: relative; }
 .ik-profile__btn{
   display: flex;
@@ -361,10 +494,11 @@
   overflow: visible;
 }
 
-/* variante grande del perfil */
+/* variante grande del perfil (más FB-like) */
 .ik-menu--profile{
-  width: 380px;
+  width: 440px;
 }
+
 
 /* estado abierto */
 .ik-menu--profile.open{
@@ -381,25 +515,24 @@
   border: 1px solid rgba(255,255,255,.08);
 }
 
-/* header “FB-like” */
 .ik-menu__hero{
   display: grid;
-  grid-template-columns: 84px 1fr;
-  gap: 12px;
+  grid-template-columns: 96px 1fr;
+  gap: 14px;
   align-items: center;
-  padding: 14px 14px 12px;
+  padding: 16px 16px 14px;
   border-bottom: 1px solid rgba(255,255,255,.06);
 }
 
 .ik-menu__avatarBig{
-  width: 76px;
-  height: 76px;
-  border-radius: 22px;
+  width: 88px;
+  height: 88px;
+  border-radius: 26px;
   position: relative;
   display: grid;
   place-items: center;
   background: rgba(255,255,255,.08);
-  border: 1px solid rgba(255,255,255,.10);
+  border: 1px solid rgba(255,255,255,.12);
   overflow: hidden;
 }
 
@@ -469,65 +602,90 @@
   text-overflow: ellipsis;
 }
 
-/* rows */
 .ik-menu__rows{
-  padding: 12px 12px 10px;
+  padding: 14px 14px 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  max-height: min(520px, calc(100vh - 170px));
+  gap: 12px;
+
+  max-height: min(640px, calc(100vh - 150px)); /* más alto */
   overflow: auto;
 
-  /* ocultar scrollbar pero permitir scroll */
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
+
 .ik-menu__rows::-webkit-scrollbar{
   width: 0;
   height: 0;
 }
 
-/* fila estilo “settings card” */
 .ik-row{
   display: grid;
-  grid-template-columns: 28px 84px 1fr;
+  grid-template-columns: 40px 96px 1fr;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 
   padding: 10px 10px;
   border-radius: 16px;
-  border: 1px solid rgba(255,255,255,.06);
-  background: rgba(255,255,255,.03);
+
+  /* ✅ por defecto: SIN contenedor visible */
+  border: 1px solid transparent;
+  background: transparent;
+
+  transition: background .12s ease, border-color .12s ease, transform .12s ease;
 }
 
+/* ✅ solo aparece en hover o cuando editas un input dentro */
+.ik-row:hover,
+.ik-row:focus-within{
+  background: rgba(255,255,255,.035);
+  border-color: rgba(255,255,255,.09);
+  transform: translateY(-1px);
+}
+
+
 .ik-row__ic{
-  width: 28px;
-  height: 28px;
-  border-radius: 12px;
+  width: 40px;
+  height: 40px;
+  border-radius: 16px;
   display: grid;
   place-items: center;
-  background: rgba(255,255,255,.06);
-  border: 1px solid rgba(255,255,255,.08);
-  color: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.07);
+  border: 1px solid rgba(255,255,255,.10);
+  color: rgba(255,255,255,.95);
+}
+
+.ik-row__ic svg{
+  width: 20px;
+  height: 20px;
 }
 
 .ik-row__k{
   font-size: 12px;
-  font-weight: 900;
+  font-weight: 950;
   letter-spacing: .25px;
-  color: rgba(255,255,255,.70);
+  color: rgba(255,255,255,.72);
 }
 
+/* ✅ Texto completo sin romper: permite 2 líneas y corta bonito */
 .ik-row__v{
   font-size: 13px;
-  font-weight: 800;
+  font-weight: 850;
   color: rgba(255,255,255,.92);
   min-width: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   text-align: right;
+
+  white-space: normal;
+  overflow: hidden;
+
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  word-break: break-word;
 }
+
 
 .ik-row--edit{
   grid-template-columns: 28px 84px 1fr;
@@ -1550,6 +1708,24 @@ html, body{
 .ik-menu{
   color: var(--onDark);
 }
+/* ✅ En el menú (siempre oscuro) NO se permiten estilos "light" */
+.ik-menu .ik-inlineValue{
+  color: var(--onDark) !important;
+}
+.ik-menu .ik-inlineValue:not(.ok){
+  color: var(--onDarkMuted) !important;
+}
+
+.ik-menu .ik-lineInput{
+  color: var(--onDark) !important;
+  border-bottom-color: rgba(255,255,255,.16) !important;
+}
+.ik-menu .ik-lineInput::placeholder{
+  color: rgba(255,255,255,.42) !important;
+}
+.ik-menu .ik-lineInput:focus{
+  border-bottom-color: rgba(121,86,255,.55) !important;
+}
 
 .ik-topbar .ik-search__input,
 .ik-topbar .ik-search__clear{
@@ -1594,6 +1770,72 @@ html, body{
 /* ===== Switch universal: OFF rojo / ON verde (igual en light y dark) ===== */
 .ik-row--toggle{
   cursor: pointer;
+}
+/* =========================================
+   ✅ Sidebar hover-expand (sin botón)
+   - colapsada por defecto
+   - se expande al pasar el mouse
+   - labels/badges/section titles aparecen SOLO expandida
+   ========================================= */
+
+.ik-sidebar.ik-sidebar--hover{
+  width: 86px; /* colapsada */
+}
+
+.ik-sidebar.ik-sidebar--hover:hover{
+  width: 280px; /* expandida */
+}
+
+/* ✅ Ocultar texto cuando NO está hover */
+.ik-sidebar.ik-sidebar--hover:not(:hover) .ik-sidebar__title{
+  opacity: 0;
+  transform: translateX(-8px);
+}
+
+.ik-sidebar.ik-sidebar--hover:not(:hover) .ik-sidesection__title{
+  display: none;
+}
+
+.ik-sidebar.ik-sidebar--hover:not(:hover) .ik-sideitem__label,
+.ik-sidebar.ik-sidebar--hover:not(:hover) .ik-sidebadge,
+.ik-sidebar.ik-sidebar--hover:not(:hover) .ik-sidebar__foot .ik-foot__k,
+.ik-sidebar.ik-sidebar--hover:not(:hover) .ik-sidebar__foot .ik-foot__v,
+.ik-sidebar.ik-sidebar--hover:not(:hover) .ik-sep{
+  display: none;
+}
+
+/* ✅ Centrar iconos cuando colapsa */
+.ik-sidebar.ik-sidebar--hover:not(:hover) .ik-sideitem{
+  justify-content: center;
+  padding: 0;
+  gap: 0;
+
+  /* ✅ sin “recuadro” visible */
+  border-color: transparent;
+  background: transparent;
+}
+
+/* ✅ En hover sí aparece el contenedor (solo cuando interactúas) */
+.ik-sidebar.ik-sidebar--hover:hover .ik-sideitem{
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.05);
+}
+
+.ik-sidebar.ik-sidebar--hover:hover .ik-sideitem:hover{
+  background: rgba(255,255,255,.10);
+  border-color: rgba(255,255,255,.16);
+}
+
+/* ✅ Icono un pelín más grande en colapsado */
+.ik-sidebar.ik-sidebar--hover:not(:hover) .ik-sideitem__icon svg{
+  width: 20px;
+  height: 20px;
+}
+
+/* ✅ Suavidad */
+.ik-sidebar__title{
+  transition: opacity 220ms cubic-bezier(.2,.9,.2,1), transform 220ms cubic-bezier(.2,.9,.2,1);
+  
 }
 
 .ik-switch{
@@ -2339,4 +2581,473 @@ html, body{
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+/* ✅ Theme toggle independiente (NO usa .ik-switch) */
+.ik-themeToggle{
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.ik-themeToggle__track{
+  width: 86px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.ik-dashboard.theme-light .ik-themeToggle__track{
+  border: 1px solid rgba(15,23,42,.14);
+  background: rgba(15,23,42,.04);
+}
+
+.ik-themeToggle__sun,
+.ik-themeToggle__moon{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 28px;
+  height: 28px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  opacity: .85;
+  transition: opacity 220ms cubic-bezier(.2,.9,.2,1), transform 220ms cubic-bezier(.2,.9,.2,1);
+}
+
+.ik-themeToggle__sun{ left: 8px; }
+.ik-themeToggle__moon{ right: 8px; }
+
+.ik-themeToggle__knob{
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  transition: left 260ms cubic-bezier(.2,.9,.2,1);
+}
+
+.ik-themeToggle.on .ik-themeToggle__knob{
+  left: calc(100% - 36px);
+}
+.ik-themeToggle.on .ik-themeToggle__sun{
+  opacity: .35;
+  transform: translateY(-50%) scale(.95);
+}
+.ik-themeToggle.on .ik-themeToggle__moon{
+  opacity: 1;
+  transform: translateY(-50%) scale(1.05);
+}
+.ik-themeToggle:not(.on) .ik-themeToggle__sun{
+  opacity: 1;
+  transform: translateY(-50%) scale(1.05);
+}
+.ik-themeToggle:not(.on) .ik-themeToggle__moon{
+  opacity: .35;
+  transform: translateY(-50%) scale(.95);
+}
+/* =========================
+   ✅ Theme switch (IMG2 vibe)
+   - sin textos afuera
+   - iconos dentro
+   - knob naranja (light) / azul (dark)
+   ========================= */
+
+.ik-row--themeSwitchOnly{
+  display: grid;
+  place-items: center;
+  padding: 12px 10px;
+}
+
+/* botón */
+.ik-themeToggle2{
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  justify-content: center;
+  width: 100%;
+}
+
+/* track */
+
+.ik-themeToggle2__track{
+  width: 98px;
+  height: 38px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.14);
+  background: rgba(255,255,255,.07);
+  position: relative;
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.10);
+}
+
+.ik-themeToggle2__track::before{
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 1;
+
+  /* ✅ Degradado ultra sutil (estado OFF = cálido) */
+  background: linear-gradient(
+    90deg,
+    rgba(255, 149, 0, .22),
+    rgba(255, 149, 0, .10)
+  );
+
+  transition: background 260ms cubic-bezier(.2,.9,.2,1), opacity 260ms ease;
+}
+
+/* ✅ Estado ON = frío (azul) */
+.ik-themeToggle2.on .ik-themeToggle2__track::before{
+  background: linear-gradient(
+    90deg,
+    rgba(64, 130, 255, .24),
+    rgba(64, 130, 255, .10)
+  );
+}
+
+/* ✅ En theme-light el overlay se ve un poco menos para que no grite */
+.ik-dashboard.theme-light .ik-themeToggle2__track::before{
+  background: linear-gradient(
+    90deg,
+    rgba(255, 149, 0, .18),
+    rgba(255, 149, 0, .08)
+  );
+}
+
+
+
+.ik-dashboard.theme-light .ik-themeToggle2__track{
+  border: 1px solid rgba(15,23,42,.14);
+  background: rgba(15,23,42,.04);
+}
+
+/* iconos “fijos” dentro del track */
+.ik-themeToggle2__icon{
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 30px;
+  height: 30px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  opacity: .22;
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.25));
+}
+
+.ik-themeToggle2__icon svg{
+  width: 18px;
+  height: 18px;
+  color: rgba(255,255,255,.95);
+}
+
+.ik-dashboard.theme-light .ik-themeToggle2__icon svg{
+  color: rgba(15,23,42,.92);
+}
+
+.ik-themeToggle2__icon--sun{ left: 8px; }
+.ik-themeToggle2__icon--moon{ right: 8px; }
+
+/* knob con icono dentro */
+.ik-themeToggle2__knob{
+  position: absolute;
+  top: 50%;
+  left: 6px;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+
+  display: grid;
+  place-items: center;
+
+  transition:
+    left 320ms cubic-bezier(.2,.9,.2,1),
+    background 260ms cubic-bezier(.2,.9,.2,1),
+    box-shadow 260ms cubic-bezier(.2,.9,.2,1),
+    filter 260ms cubic-bezier(.2,.9,.2,1);
+}
+
+/* icono dentro del knob */
+.ik-themeToggle2__knobIc svg{
+  width: 18px;
+  height: 18px;
+  color: rgba(255,255,255,.98);
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,.25));
+}
+
+/* LIGHT (off) => naranja */
+.ik-themeToggle2:not(.on) .ik-themeToggle2__knob{
+  background: rgba(255, 149, 0, .95);
+  box-shadow:
+    0 14px 34px rgba(255,149,0,.22),
+    0 10px 26px rgba(0,0,0,.28);
+}
+
+/* DARK (on) => azul + glow */
+.ik-themeToggle2.on .ik-themeToggle2__knob{
+  left: calc(100% - 38px);
+  background: rgba(64, 130, 255, .96);
+  box-shadow:
+    0 14px 36px rgba(64,130,255,.26),
+    0 10px 26px rgba(0,0,0,.34);
+  filter: saturate(1.05);
+}
+
+/* “brillo” del icono activo */
+.ik-themeToggle2.on .ik-themeToggle2__icon--moon{ opacity: .32; }
+.ik-themeToggle2:not(.on) .ik-themeToggle2__icon--sun{ opacity: .32; }
+
+/* micro-anim al presionar */
+.ik-themeToggle2:active .ik-themeToggle2__knob{
+  transform: translateY(-50%) scale(.98);
+}
+.ik-themeRow{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 10px 10px 12px;
+  width: 100%;
+
+  /* ✅ lo integra al menú sin verse “suelto” */
+  border-top: 1px solid rgba(255,255,255,.06);
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  margin: 6px 0;
+}
+.ik-themeToggle2__track{
+  width: 100px;   /* antes 92 */
+  height: 34px;  /* antes 38 */
+}
+/* ✅ Micro “pulse” al cambiar (se dispara porque cambia el animation-name al alternar .on) */
+.ik-themeToggle2:not(.on) .ik-themeToggle2__track{
+  animation: ikTrackPulseWarm 420ms ease-out;
+}
+
+.ik-themeToggle2.on .ik-themeToggle2__track{
+  animation: ikTrackPulseCool 420ms ease-out;
+}
+
+/* ✅ Keyframes (glow muy sutil, pro) */
+@keyframes ikTrackPulseWarm{
+  0%   { box-shadow: inset 0 1px 0 rgba(255,255,255,.10); }
+  45%  { box-shadow: 0 0 0 6px rgba(255,149,0,.12), inset 0 1px 0 rgba(255,255,255,.12); }
+  100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.10); }
+}
+
+@keyframes ikTrackPulseCool{
+  0%   { box-shadow: inset 0 1px 0 rgba(255,255,255,.10); }
+  45%  { box-shadow: 0 0 0 6px rgba(64,130,255,.12), inset 0 1px 0 rgba(255,255,255,.12); }
+  100% { box-shadow: inset 0 1px 0 rgba(255,255,255,.10); }
+}
+
+.ik-themeToggle2__knob{
+  width: 28px;   /* antes 32 */
+  height: 28px;  /* antes 32 */
+  left: 5px; /* antes 6 */
+}
+
+.ik-themeToggle2.on .ik-themeToggle2__knob{
+  left: calc(100% - 33px); /* ajustado al knob */
+}
+
+/* baja un poco el “glow” para que no grite */
+.ik-themeToggle2:not(.on) .ik-themeToggle2__knob,
+.ik-themeToggle2.on .ik-themeToggle2__knob{
+  box-shadow: 0 10px 22px rgba(0,0,0,.28);
+}
+
+
+/* ✅ el botón ya no ocupa 100% del ancho */
+.ik-themeToggle2{
+  width: auto;
+}
+
+.ik-row__right{
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 0;
+}
+
+.ik-pillValue{
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(255,255,255,.06);
+  font-weight: 900;
+  font-size: 12px;
+  color: rgba(255,255,255,.90);
+  white-space: nowrap;
+}
+
+.ik-pillValue.ok{
+  border-color: rgba(34,197,94,.25);
+  background: rgba(34,197,94,.10);
+}
+
+.ik-miniIcon{
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.10);
+  background: rgba(255,255,255,.06);
+  color: rgba(255,255,255,.92);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-weight: 900;
+}
+
+.ik-miniIcon:disabled{
+  opacity: .55;
+  cursor: not-allowed;
+}
+
+.ik-inlineInput{
+  width: 140px;
+  height: 30px;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,.12);
+  background: rgba(0,0,0,.18);
+  color: rgba(255,255,255,.92);
+  outline: none;
+  padding: 0 10px;
+  font-weight: 900;
+  text-align: right;
+}
+
+.ik-dashboard.theme-light :not(.ik-menu) .ik-pillValue{
+  border-color: rgba(15,23,42,.12);
+  background: rgba(15,23,42,.04);
+  color: rgba(15,23,42,.92);
+}
+.ik-dashboard.theme-light :not(.ik-menu) .ik-miniIcon{
+  border-color: rgba(15,23,42,.12);
+  background: rgba(15,23,42,.05);
+  color: rgba(15,23,42,.92);
+}
+.ik-dashboard.theme-light :not(.ik-menu) .ik-inlineInput{
+  border-color: rgba(15,23,42,.14);
+  background: rgba(255,255,255,.92);
+  color: rgba(15,23,42,.92);
+}
+
+/* =========================
+   ✅ Phone inline (Google Forms vibe)
+   ========================= */
+
+.ik-inlineValueBtn{
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  max-width: 260px;
+  text-align: right;
+}
+
+.ik-inlineValue{
+  display: inline-block;
+  font-weight: 900;
+  font-size: 13px;
+  color: rgba(255,255,255,.92);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.ik-inlineValue.ok{
+  color: rgba(255,255,255,.92);
+}
+
+/* placeholder cuando está vacío */
+.ik-inlineValue:not(.ok){
+  color: rgba(255,255,255,.60);
+}
+
+/* input SOLO con línea inferior */
+.ik-lineInput{
+  width: 260px;
+  max-width: 100%;
+  border: 0 !important;
+  border-bottom: 2px solid rgba(255,255,255,.16) !important;
+  background: transparent !important;
+  color: rgba(255,255,255,.92) !important;
+  outline: none !important;
+  padding: 6px 0 !important;
+  font-weight: 900;
+  text-align: right;
+}
+
+.ik-lineInput::placeholder{
+  color: rgba(255,255,255,.42);
+  font-weight: 900;
+}
+
+.ik-lineInput:focus{
+  border-bottom-color: rgba(121,86,255,.55) !important;
+}
+
+/* ✅ Light theme (global): para páginas/superficies claras */
+.ik-dashboard.theme-light .ik-inlineValue{
+  color: rgba(15,23,42,.92);
+}
+.ik-dashboard.theme-light .ik-inlineValue:not(.ok){
+  color: rgba(15,23,42,.50);
+}
+.ik-dashboard.theme-light .ik-lineInput{
+  color: rgba(15,23,42,.92) !important;
+  border-bottom-color: rgba(15,23,42,.18) !important;
+}
+.ik-dashboard.theme-light .ik-lineInput:focus{
+  border-bottom-color: rgba(86,97,246,.70) !important;
+}
+.ik-dashboard.theme-light .ik-lineInput::placeholder{
+  color: rgba(15,23,42,.45) !important;
+}
+
+/* ✅ PERO: dentro del menú (que es oscuro) SIEMPRE onDark (aunque estés en light) */
+.ik-dashboard.theme-light .ik-menu .ik-inlineValue{
+  color: var(--onDark) !important;
+}
+.ik-dashboard.theme-light .ik-menu .ik-inlineValue:not(.ok){
+  color: var(--onDarkMuted) !important;
+}
+.ik-dashboard.theme-light .ik-menu .ik-lineInput{
+  color: var(--onDark) !important;
+  border-bottom-color: rgba(255,255,255,.16) !important;
+}
+.ik-dashboard.theme-light .ik-menu .ik-lineInput:focus{
+  border-bottom-color: rgba(121,86,255,.55) !important;
+}
+.ik-dashboard.theme-light .ik-menu .ik-lineInput::placeholder{
+  color: rgba(255,255,255,.42) !important;
+}
+
+
+/* =========================
+   ✅ SweetAlert: botones visibles
+   ========================= */
+.ik-swalNoActions{
+  display: flex !important;
+  justify-content: center;
+  gap: 10px;
+}
+.ik-swalHiddenBtn{
+  display: inline-flex !important;
 }
